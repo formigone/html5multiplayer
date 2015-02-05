@@ -1,0 +1,7 @@
+{
+    "name": "html5multiplayer",
+    "dependencies": {
+        "express": "*",
+        "express-generator": "*"
+    }
+}
