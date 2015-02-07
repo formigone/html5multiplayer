@@ -1,5 +1,13 @@
 extends layout
 
 block content
-  h1= title
-  p Welcome to #{title}
+    .container
+        .row
+            .col-md-3.col-md-offset-3.scoreBoard
+                h1
+                    span#p1Score
+            .col-md-3.scoreBoard
+                h1.text-right
+                    span#p2Score
+        .row
+            .col-md-6.col-md-offset-3#gameBoard
