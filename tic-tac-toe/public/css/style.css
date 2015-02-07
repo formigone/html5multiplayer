@@ -84,10 +84,12 @@ body {
 
 .boardCol {
     width: 5px;
+    cursor: default !important;
 }
 
 .boardRow {
     height: 5px;
+    cursor: default !important;
 }
 
 .scoreBoard span.active {

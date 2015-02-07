@@ -16,7 +16,11 @@ var Board = function() {
 
 Board.events = {
     PLAYER_CONNECTED: 'playerConnected',
-    GAME_READY: 'gameReady'
+    GAME_READY: 'gameReady',
+    CELL_MARKED: 'cellMarked',
+    CHANGE_TURN: 'changeTurn',
+    WINNER: 'winner',
+    DRAW: 'draw'
 };
 
 util.inherits(Board, EventEmitter);
@@ -54,19 +58,32 @@ Board.prototype.mark = function(cellId) {
     }
 
     if (this.ready && cell.active) {
-        cell.value = this.players[this.currentTurn].label;
+        var player = this.players[this.currentTurn];
+        cell.value = player.label;
         cell.active = false;
+
+        this.emit(Board.events.CELL_MARKED, {cellId: cellId, player: player});
 
         var res = this.checkWinner();
         if (res.win) {
             this.disableAll();
-            // TODO: return response
+            this.emit(Board.events.WINNER, {player: this.players[this.currentTurn], pos: res.pos});
         } else if (this.checkDraw()) {
-            // TODO: return response
+            this.emit(Board.events.DRAW, {});
         } else {
             this.currentTurn = (this.currentTurn + 1) % 2;
+            this.emit(Board.events.CHANGE_TURN, this.players[this.currentTurn]);
         }
     }
+};
+
+/**
+ *
+ * @param playerId
+ * @returns {boolean}
+ */
+Board.prototype.checkTurn = function(playerId) {
+    return this.players[this.currentTurn].id == playerId;
 };
 
 /**

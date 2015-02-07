@@ -1,16 +1,18 @@
 var socket = new WebSocket('ws://localhost:2667');
 var events = {
     outgoing: {
-        JOIN_GAME: 'inJoinGame',
-        MARK: 'inMark'
+        JOIN_GAME: 'csJoinGame',
+        MARK: 'csMark',
+        QUIT: 'csQuit'
     },
     incoming: {
-        JOIN_GAME: 'outJoinGame',
-        MARK: 'outMark',
-        GAME_READY: 'outGameReady',
-        OPPONENT_READY: 'outOpponentReady',
-        GAME_OVER: 'outGameOver',
-        ERROR: 'outError'
+        JOIN_GAME: 'scJoinGame',
+        MARK: 'scMark',
+        SET_TURN: 'scSetTurn',
+        OPPONENT_READY: 'scOpponentReady',
+        GAME_OVER: 'scGameOver',
+        ERROR: 'scError',
+        QUIT: 'scQuit'
     }
 };
 
@@ -47,6 +49,14 @@ function makeMessage(action, data){
 
 /**
  *
+ * @param cellId
+ */
+board.onMark = function(cellId){
+    socket.send(makeMessage(events.outgoing.MARK, {playerId: hero.id, cellId: cellId}));
+};
+
+/**
+ *
  */
 function start() {
     while (container.lastChild) {
@@ -56,7 +66,7 @@ function start() {
     if (board.players.length === 1) {
         scoreBoard[1].textContent = 'waiting...';
     }
-    
+
     board.bindTo(container);
 }
 
@@ -79,10 +89,38 @@ socket.onmessage = function(event){
         case events.incoming.JOIN_GAME:
             board.addPlayer(msg.data);
             if (msg.data.name === hero.name) {
+                hero = msg.data;
                 start();
             }
+
             break;
-        case events.incoming.GAME_READY:
+        case events.incoming.SET_TURN:
+            board.highlightScoreboard(msg.data.id);
+            board.ready = true;
+            if (msg.data.id === hero.id) {
+                board.enableTurn();
+            }
+
+            break;
+        case events.incoming.MARK:
+            board.doMark(msg.data.cellId, msg.data.player.label);
+
+            break;
+
+        case events.incoming.GAME_OVER:
+            if (msg.data.player) {
+                board.doWinner(msg.data.pos);
+            } else {
+                board.doDraw();
+            }
+
+            socket.send(makeMessage(events.outgoing.QUIT, hero.id));
+
+            break;
+
+        case events.incoming.QUIT:
+            socket.close();
+
             break;
     }
 };

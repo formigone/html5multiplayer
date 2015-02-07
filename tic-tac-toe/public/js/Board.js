@@ -15,6 +15,8 @@ var Board = function(scoreBoard) {
     this.init();
 };
 
+Board.prototype.onMark = function(cellId){};
+
 /**
  *
  */
@@ -35,6 +37,7 @@ Board.prototype.init = function() {
     cell.classList.add('gameCell');
     cell.classList.add('notActive');
     cell.setAttribute('marked', 'false');
+    cell.setAttribute('data-intent', 'gameCell');
 
     this.dom.classList.add('gameBoard');
 
@@ -79,6 +82,15 @@ Board.prototype.enableAll = function() {
     });
 };
 
+Board.prototype.enableTurn = function() {
+    this.cells.forEach(function(cell) {
+        if (cell.getAttribute('marked') === 'false') {
+            cell.classList.remove('notActive');
+            cell.setAttribute('active', 'true');
+        }
+    });
+};
+
 Board.prototype.highlightCells = function(pos) {
     var cells = this.cells;
     pos.forEach(function(i) {
@@ -104,33 +116,53 @@ Board.prototype.lowlightCells = function() {
 Board.prototype.mark = function(event) {
     var target = event.target;
 
-    if (this.ready && target.getAttribute('marked') === 'false') {
-        target.textContent = this.players[this.currentTurn].label;
-        target.classList.add('notActive');
-        target.setAttribute('marked', 'true');
-
-        var res = this.checkWinner();
-        if (res.win) {
-            this.disableAll();
-            this.highlightCells(res.pos);
-        } else if (this.checkDraw()) {
-            this.lowlightCells();
-        } else {
-            this.currentTurn = (this.currentTurn + 1) % 2;
-            this.highlightScoreboard();
-        }
+    if (this.ready && target.getAttribute('data-intent') === 'gameCell' && target.getAttribute('active') === 'true') {
+        this.onMark(this.cells.indexOf(target));
+        this.disableAll();
     }
 };
 
 /**
  *
+ * @param cellId
+ * @param label
  */
-Board.prototype.highlightScoreboard = function() {
+Board.prototype.doMark = function(cellId, label) {
+    var cell = this.cells[cellId];
+    cell.textContent = label;
+    cell.classList.add('notActive');
+    cell.setAttribute('marked', 'true');
+};
+
+/**
+ *
+ * @param pos
+ */
+Board.prototype.doWinner = function(pos) {
+    this.disableAll();
+    this.highlightCells(pos);
+};
+
+/**
+ *
+ */
+Board.prototype.doDraw = function() {
+    this.lowlightCells();
+};
+
+/**
+ *
+ */
+Board.prototype.highlightScoreboard = function(playerId) {
     this.scoreBoard.forEach(function(score) {
         score.classList.remove('active');
     });
 
-    this.scoreBoard[this.currentTurn].classList.add('active');
+    this.scoreBoard.forEach(function(board){
+        if (board.getAttribute('playerId') == playerId) {
+            board.classList.add('active');
+        }
+    });
 };
 
 /**
@@ -203,12 +235,7 @@ Board.prototype.addPlayer = function(player) {
                 this.scoreBoard[this.players.length - 1].textContent = player.name + ' ' + player.label;
             }
 
-            this.ready = this.players.length === 2;
-
-            if (this.ready) {
-                this.enableAll();
-                this.highlightScoreboard();
-            }
+            this.scoreBoard[this.players.length - 1].setAttribute('playerId', player.id);
         }
     }
 };
