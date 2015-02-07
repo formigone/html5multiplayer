@@ -1,5 +1,8 @@
 //var socket = new WebSocket('ws://localhost:2667');
 var container = document.querySelector('#gameBoard');
+var startBtn = document.querySelector('#startBtn');
+var nameInput = document.querySelector('#nickname');
+
 var scoreBoard = [
     document.querySelector('#p1Score'),
     document.querySelector('#p2Score')
@@ -74,6 +77,37 @@ Board.prototype.bindTo = function(container) {
     container.appendChild(this.dom);
 };
 
+Board.prototype.disableAll = function(){
+    this.cells.forEach(function(cell){
+        cell.classList.add('notActive');
+    });
+};
+
+Board.prototype.enableAll = function(){
+    this.cells.forEach(function(cell){
+        cell.classList.remove('notActive');
+        cell.setAttribute('marked', 'false');
+    });
+};
+
+Board.prototype.highlightCells = function(pos){
+    var cells = this.cells;
+    pos.forEach(function(i){
+        cells[i].classList.add('colorRed');
+    });
+
+    cells.forEach(function(cell){
+        cell.setAttribute('marked', 'true');
+    });
+};
+
+Board.prototype.lowlightCells = function(){
+    var cells = this.cells;
+    cells.forEach(function(cell){
+        cell.classList.add('colorWhite');
+    });
+};
+
 /**
  *
  * @param event
@@ -84,9 +118,18 @@ Board.prototype.mark = function(event){
     if (this.ready && target.getAttribute('marked') === 'false') {
         target.textContent = this.players[this.currentTurn].label;
         target.classList.add('notActive');
+        target.setAttribute('marked', 'true');
 
-        this.currentTurn = (this.currentTurn + 1) % 2;
-        this.highlightScoreboard();
+        var res = this.checkWinner();
+        if (res.win) {
+            this.disableAll();
+            this.highlightCells(res.pos);
+        } else if (this.checkDraw()) {
+            this.lowlightCells();
+        } else {
+            this.currentTurn = (this.currentTurn + 1) % 2;
+            this.highlightScoreboard();
+        }
     }
 };
 
@@ -101,8 +144,55 @@ Board.prototype.highlightScoreboard = function(){
     this.scoreBoard[this.currentTurn].classList.add('active');
 };
 
+/**
+ *
+ * @returns {{win: boolean, pos: Array}}
+ */
 Board.prototype.checkWinner = function(){
-    
+    var winPosition = [
+        [0, 1, 2],
+        [3, 4, 5],
+        [6, 7, 8],
+
+        [0, 3, 6],
+        [1, 4, 7],
+        [2, 5, 8],
+
+        [0, 4, 8],
+        [6, 4, 2]
+    ];
+
+    var player = this.players[this.currentTurn];
+    var pos = [];
+
+    var win = winPosition.some(function(win){
+        if (this.cells[win[0]].textContent === player.label) {
+            var res = this.cells[win[0]].textContent === this.cells[win[1]].textContent && this.cells[win[1]].textContent === this.cells[win[2]].textContent;
+
+            if (res) {
+                pos = win;
+                return true;
+            }
+        }
+
+        return false;
+    }, this);
+
+    return {
+        win: win,
+        pos: pos
+    };
+
+};
+
+/**
+ *
+ * @returns {boolean}
+ */
+Board.prototype.checkDraw = function(){
+    return this.cells.every(function(cell){
+        return cell.textContent === this.players[0].label || cell.textContent === this.players[1].label;
+    }, this);
 };
 
 /**
@@ -127,10 +217,7 @@ Board.prototype.addPlayer = function(player){
             this.ready = this.players.length === 2;
 
             if (this.ready) {
-                this.cells.forEach(function(cell){
-                    cell.classList.remove('notActive');
-                });
-
+                this.enableAll();
                 this.highlightScoreboard();
             }
         }
@@ -150,20 +237,34 @@ var Player = function(id, label, name){
     this.name = name;
 };
 
-var board = new Board(scoreBoard);
-board.bindTo(container);
+function start(name){
+    var board = new Board(scoreBoard);
 
-var p1 = new Player(1, 'X', 'Rodrigo');
-var p2 = new Player(2, 'O', 'Mara');
+    while (container.lastChild) {
+        container.removeChild(container.lastChild);
+    }
 
-setTimeout(function(){
-    board.addPlayer(p1);
-}, 500);
+    scoreBoard[1].textContent = 'waiting...';
+    board.bindTo(container);
 
-setTimeout(function(){
-    board.addPlayer(p2);
-}, 800);
+    setTimeout(function(){
+        var player = new Player(1, 'X', name);
+        board.addPlayer(player);
 
+        setTimeout(function(){
+            var player = new Player(2, 'O', 'Formigone');
+            board.addPlayer(player);
+        }, 1500);
+    }, 0);
+}
+
+startBtn.addEventListener('click', function(event){
+    var name = nameInput.value.trim();
+
+    if (name.length > 0) {
+        start(name);
+    }
+});
 
 /*
 

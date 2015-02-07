@@ -20,22 +20,34 @@
 
 body {
     background: #A5DAD2;
+    font-family: Quicksand, san-serif;
 }
 
 .bgWhite {
     background: #F5F2F5;
 }
 
+.colorWhite {
+    color: #F5F2F5 !important;
+}
+
 .bgDark {
     background: #516D66;
+}
+
+.colorDark {
+    color: #516D66;
 }
 
 .bgRed {
     background: #F286A0;
 }
 
+.colorRed {
+    color: #F286A0 !important;
+}
+
 .gameBoard, .scoreBoard {
-    font-family: Quicksand, san-serif;
     font-weight: 400;
 }
 
@@ -67,6 +79,7 @@ body {
 
 .scoreBoard {
     color: #516D66;
+    height: 100px;
 }
 
 .boardCol {
