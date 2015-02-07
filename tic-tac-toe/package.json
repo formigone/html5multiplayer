@@ -3,8 +3,8 @@
     "version": "0.0.0",
     "private": true,
     "scripts": {
-        "start": "nodemon ./bin/www",
-        "server": "nodemon server.js"
+        "web-server": "nodemon ./bin/www",
+        "socket-server": "nodemon server.js"
     },
     "dependencies": {
         "express": "~4.9.0",
