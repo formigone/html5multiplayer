@@ -6,11 +6,11 @@ var keys = require('./keyboard.js');
 
 var WIDTH = 1600 / 2;
 var HEIGHT = 900 / 2;
-var FPS = 60;
+var FPS = 10;
 var renderer = new Renderer(WIDTH, HEIGHT);
 var game = new Game(FPS);
 
-var player = new Snake(10, 10, '#0c0', 8 / FPS);
+var player = new Snake(10, 10, '#0c0');
 var ctx = renderer.ctx;
 
 game.onUpdate = function (delta) {
@@ -22,7 +22,7 @@ game.onRender = function () {
     ctx.fillStyle = player.color;
 
     player.pieces.forEach(function(piece){
-        ctx.fillRect(parseInt(piece.x / player.width, 10) * player.width, parseInt(piece.y / player.height, 10) * player.height, player.width, player.height);
+        ctx.fillRect(piece.x * player.width, piece.y * player.height, player.width, player.height);
     });
 };
 
@@ -42,23 +42,10 @@ document.body.addEventListener('keydown', function (e) {
         case keys.RIGHT:
         case keys.UP:
         case keys.DOWN:
-            player.setKey(key, true);
+            player.setKey(key);
             break;
         case keys.D:
             console.log(player.pieces);
-            break;
-    }
-});
-
-document.body.addEventListener('keyup', function (e) {
-    var key = e.keyCode;
-
-    switch (key) {
-        case keys.LEFT:
-        case keys.RIGHT:
-        case keys.UP:
-        case keys.DOWN:
-            player.setKey(key, false);
             break;
     }
 });
@@ -136,19 +123,22 @@ module.exports = Renderer;
 },{}],5:[function(require,module,exports){
 var keys = require('./keyboard.js');
 
-var Snake = function (x, y, color_hex, speed_ppf, width, height) {
+var Snake = function (x, y, color_hex, width, height) {
     this.color = color_hex;
     this.head = {x: x, y: y};
     this.pieces = [this.head];
-    this.speed = speed_ppf;
     this.width = width || 16;
     this.height = height || 16;
     this.readyToGrow = false;
     this.input = {};
 };
 
-Snake.prototype.setKey = function (key, pressed) {
-    this.input[key] = pressed;
+Snake.prototype.setKey = function (key) {
+    this.input[keys.UP] = false;
+    this.input[keys.DOWN] = false;
+    this.input[keys.LEFT] = false;
+    this.input[keys.RIGHT] = false;
+    this.input[key] = true;
 };
 
 Snake.prototype.update = function (delta) {
@@ -163,23 +153,18 @@ Snake.prototype.update = function (delta) {
     }
 
     if (this.input[keys.LEFT]) {
-        this.move(-1, 0);
+        this.head.x += -1;
     } else if (this.input[keys.RIGHT]) {
-        this.move(1, 0);
+        this.head.x += 1;
     } else if (this.input[keys.UP]) {
-        this.move(0, -1);
+        this.head.y += -1;
     } else if (this.input[keys.DOWN]) {
-        this.move(0, 1);
+        this.head.y += 1;
     }
 };
 
 Snake.prototype.grow = function() {
     this.readyToGrow = true;
-};
-
-Snake.prototype.move = function (x, y) {
-    this.head.x += x * this.width * this.speed;
-    this.head.y += y * this.height * this.speed;
 };
 
 module.exports = Snake;

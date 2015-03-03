@@ -5,11 +5,11 @@ var keys = require('./keyboard.js');
 
 var WIDTH = 1600 / 2;
 var HEIGHT = 900 / 2;
-var FPS = 60;
+var FPS = 10;
 var renderer = new Renderer(WIDTH, HEIGHT);
 var game = new Game(FPS);
 
-var player = new Snake(10, 10, '#0c0', 8 / FPS);
+var player = new Snake(10, 10, '#0c0');
 var ctx = renderer.ctx;
 
 game.onUpdate = function (delta) {
@@ -21,7 +21,7 @@ game.onRender = function () {
     ctx.fillStyle = player.color;
 
     player.pieces.forEach(function(piece){
-        ctx.fillRect(parseInt(piece.x / player.width, 10) * player.width, parseInt(piece.y / player.height, 10) * player.height, player.width, player.height);
+        ctx.fillRect(piece.x * player.width, piece.y * player.height, player.width, player.height);
     });
 };
 
@@ -41,23 +41,10 @@ document.body.addEventListener('keydown', function (e) {
         case keys.RIGHT:
         case keys.UP:
         case keys.DOWN:
-            player.setKey(key, true);
+            player.setKey(key);
             break;
         case keys.D:
             console.log(player.pieces);
-            break;
-    }
-});
-
-document.body.addEventListener('keyup', function (e) {
-    var key = e.keyCode;
-
-    switch (key) {
-        case keys.LEFT:
-        case keys.RIGHT:
-        case keys.UP:
-        case keys.DOWN:
-            player.setKey(key, false);
             break;
     }
 });
