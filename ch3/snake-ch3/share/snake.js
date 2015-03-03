@@ -20,7 +20,7 @@ Snake.prototype.setKey = function (key) {
 
 Snake.prototype.update = function (delta) {
     if (this.readyToGrow) {
-        this.pieces.push({x: 0, y: 0});
+        this.pieces.push({x: -10, y: -10});
         this.readyToGrow = false;
     }
 
