@@ -1,0 +1,12 @@
+var Renderer = function(width, height) {
+    this.canvas = document.createElement('canvas');
+    this.canvas.width = width;
+    this.canvas.height = height;
+    this.ctx = this.canvas.getContext('2d');
+};
+
+Renderer.prototype.bindTo = function(container) {
+    container.appendChild(this.canvas);
+};
+
+module.exports = Renderer;
