@@ -6,23 +6,30 @@ var keys = require('./keyboard.js');
 
 var BLOCK_WIDTH = 16;
 var BLOCK_HEIGHT = 16;
-var FPS = 10;
+var FPS = 20;
 var renderer = new Renderer(0, 0, document.getElementById('gameCanvas'));
 var game = new Game(FPS);
 var fruitDelay = 1500;
 var lastFruit = 0;
 var fruitDelta = 0;
 
-var player = new Snake(10, 10, '#0c0', BLOCK_WIDTH, BLOCK_HEIGHT);
+var player = new Snake(1, 10, 10, '#0c0', BLOCK_WIDTH, BLOCK_HEIGHT);
 var fruits = [];
 var ctx = renderer.ctx;
+var scoreWidgets = [
+    {
+        id: 1,
+        el: document.querySelector('#scoreA span')
+    }
+];
+var gameOver = document.getElementById('gameOver');
 
 game.onUpdate = function (delta) {
     var now = performance.now();
 
     if (fruits.length < 1) {
         fruitDelta = now - lastFruit;
-        console.log(delta, fruitDelta);
+
         if (fruitDelta >= fruitDelay) {
             // TODO: spawn fruit where we know there's no snakes on
             fruits[0] = new Fruit(parseInt(Math.random() * renderer.canvas.width / BLOCK_WIDTH / 2, 10) + 5, parseInt(Math.random() * renderer.canvas.width / BLOCK_HEIGHT / 2, 10) + 5, '#c00', BLOCK_WIDTH, BLOCK_HEIGHT);
@@ -30,6 +37,7 @@ game.onUpdate = function (delta) {
     }
 
     player.update(delta);
+    player.checkCollision();
 
     if (player.head.x < 0) {
         player.head.x = parseInt(renderer.canvas.width / player.width, 10);
@@ -69,6 +77,33 @@ game.onRender = function () {
         ctx.fillRect(fruit.x * fruit.width, fruit.y * fruit.height, fruit.width, fruit.height);
     });
 };
+
+player.on(Snake.events.POWER_UP, function(event){
+    var score = event.size * 10;
+    scoreWidgets.filter(function(widget){
+        return widget.id === event.id;
+    })
+        .pop()
+        .el.textContent = '000000'.slice(0, - (score + '').length) + score + '';
+});
+
+player.on(Snake.events.COLLISION, function(event){
+    scoreWidgets.filter(function(widget){
+        return widget.id === event.id;
+    })
+        .pop()
+        .el.parentElement.classList.add('gameOver');
+
+    game.stop();
+    setTimeout(function(){
+        ctx.fillStyle = '#f00';
+        ctx.fillRect(event.point.x * player.width, event.point.y * player.height, player.width, player.height);
+    }, 0);
+
+    setTimeout(function(){
+        gameOver.classList.remove('hidden');
+    }, 100);
+});
 
 document.body.addEventListener('keydown', function (e) {
     var key = e.keyCode;

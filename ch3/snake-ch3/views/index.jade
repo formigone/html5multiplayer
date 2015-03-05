@@ -2,6 +2,9 @@ extends layout
 
 block content
   div#gameArea
+    p#scoreA SCORE: <span>000000</span>
+    p#scoreB SCORE: <span>000000</span>
+    p#gameOver.animated.pulse.hidden Game Over
     canvas#gameCanvas
     div#statsPanel
   script(src='/js/app.build.js')

@@ -1,6 +1,9 @@
 var keys = require('./keyboard.js');
+var EventEmitter = require('events').EventEmitter;
+var util = require('util');
 
-var Snake = function (x, y, color_hex, width, height) {
+var Snake = function (id, x, y, color_hex, width, height) {
+    this.id = id;
     this.color = color_hex;
     this.head = {x: x, y: y};
     this.pieces = [this.head];
@@ -9,6 +12,13 @@ var Snake = function (x, y, color_hex, width, height) {
     this.readyToGrow = false;
     this.input = {};
 };
+
+Snake.events = {
+    POWER_UP: 'Snake:powerup',
+    COLLISION: 'Snake:collision'
+};
+
+util.inherits(Snake, EventEmitter);
 
 Snake.prototype.setKey = function (key) {
     this.input[keys.UP] = false;
@@ -40,8 +50,19 @@ Snake.prototype.update = function (delta) {
     }
 };
 
+Snake.prototype.checkCollision = function(){
+    var collide = this.pieces.some(function(piece, i){
+        return i > 0 && piece.x === this.head.x && piece.y === this.head.y;
+    }, this);
+
+    if (collide) {
+        this.emit(Snake.events.COLLISION, {id: this.id, point: this.head, timestamp: performance.now()});
+    }
+};
+
 Snake.prototype.grow = function() {
     this.readyToGrow = true;
+    this.emit(Snake.events.POWER_UP, {id: this.id, size: this.pieces.length, timestamp: performance.now()});
 };
 
 module.exports = Snake;
