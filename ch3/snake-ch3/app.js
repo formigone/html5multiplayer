@@ -4,13 +4,13 @@ var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
-var http = require('http');
-var Io = require('socket.io')
+var io = require('socket.io')();
+var gameEvents = require('./share/events.js');
 
 var routes = require('./routes/index');
 
 var app = express();
-io = Io(http);
+app.io = io;
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -57,5 +57,16 @@ app.use(function(err, req, res, next) {
     });
 });
 
+io.on('connection', function(socket){
+    console.log('new client');
+
+    socket.on(gameEvents.server_spawnFruit, function(data){
+        var pos = {
+            x: parseInt(Math.random() * data.maxWidth, 10),
+            y: parseInt(Math.random() * data.maxHeight, 10)
+        };
+        socket.emit(gameEvents.client_newFruit, pos);
+    });
+});
 
 module.exports = app;

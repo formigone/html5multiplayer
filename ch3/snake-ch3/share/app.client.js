@@ -3,6 +3,8 @@ var Game = require('./game.js');
 var Snake = require('./snake.js');
 var Fruit = require('./fruit.js');
 var keys = require('./keyboard.js');
+var socket = require('socket.io-client')('http://localhost:3000');
+var gameEvents = require('./events.js');
 
 var BLOCK_WIDTH = 16;
 var BLOCK_HEIGHT = 16;
@@ -26,13 +28,14 @@ var gameOver = document.getElementById('gameOver');
 
 game.onUpdate = function (delta) {
     var now = performance.now();
-
     if (fruits.length < 1) {
         fruitDelta = now - lastFruit;
 
         if (fruitDelta >= fruitDelay) {
-            // TODO: spawn fruit where we know there's no snakes on
-            fruits[0] = new Fruit(parseInt(Math.random() * renderer.canvas.width / BLOCK_WIDTH / 2, 10) + 5, parseInt(Math.random() * renderer.canvas.width / BLOCK_HEIGHT / 2, 10) + 5, '#c00', BLOCK_WIDTH, BLOCK_HEIGHT);
+            socket.emit(gameEvents.server_spawnFruit, {
+                maxWidth: parseInt(renderer.canvas.width / BLOCK_WIDTH / 2, 10),
+                maxHeight: parseInt(renderer.canvas.width / BLOCK_HEIGHT / 2, 10)
+            });
         }
     }
 
@@ -154,4 +157,14 @@ function resizeGame() {
 window.addEventListener('resize', resizeGame, false);
 window.addEventListener('orientationchange', resizeGame, false);
 resizeGame();
-game.start();
+
+socket.on('connect', function(){
+    game.start();
+});
+
+socket.on(gameEvents.client_newFruit, function(fruit){
+    fruits[0] = new Fruit(fruit.x, fruit.y, '#c00', BLOCK_WIDTH, BLOCK_HEIGHT);
+    console.log('new fruit:', fruits[0]);
+});
+
+//game.start();
