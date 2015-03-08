@@ -56,13 +56,13 @@ Snake.prototype.checkCollision = function(){
     }, this);
 
     if (collide) {
-        this.emit(Snake.events.COLLISION, {id: this.id, point: this.head, timestamp: performance.now()});
+        this.emit(Snake.events.COLLISION, {id: this.id, point: this.head});
     }
 };
 
 Snake.prototype.grow = function() {
     this.readyToGrow = true;
-    this.emit(Snake.events.POWER_UP, {id: this.id, size: this.pieces.length, timestamp: performance.now()});
+    this.emit(Snake.events.POWER_UP, {id: this.id, size: this.pieces.length});
 };
 
 module.exports = Snake;

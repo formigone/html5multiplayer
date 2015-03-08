@@ -7997,9 +7997,12 @@ var fruitDelay = 1500;
 var lastFruit = 0;
 var fruitDelta = 0;
 var roomId = 0;
+var playerAColor = '#0c0';
+var playerBColor = '#cc7400';
 
 /** @type {Snake} */
-var player = new Snake(parseInt(Math.random() * 999999, 10), parseInt(Math.random() * window.innerWidth / 1.5, 10), parseInt(Math.random() * window.innerHeight / 1.5, 10), '#0c0', BLOCK_WIDTH, BLOCK_HEIGHT);
+var player = new Snake(parseInt(Math.random() * 999999, 10), parseInt(Math.random() * window.innerWidth / 1.5, 10), parseInt(Math.random() * window.innerHeight / 1.5, 10), playerAColor, BLOCK_WIDTH, BLOCK_HEIGHT);
+var otherPlayers = [];
 var fruits = [];
 var ctx = renderer.ctx;
 var scoreWidget = document.querySelector('#scoreA span');
@@ -8044,6 +8047,28 @@ game.onUpdate = function (delta) {
         player.head.y = 0;
     }
 
+    otherPlayers.map(function(player){
+        console.log('PPPP', player);return;
+        player.update(delta);
+        player.checkCollision();
+
+        if (player.head.x < 0) {
+            player.head.x = parseInt(renderer.canvas.width / player.width, 10);
+        }
+
+        if (player.head.x > parseInt(renderer.canvas.width / player.width, 10)) {
+            player.head.x = 0;
+        }
+
+        if (player.head.y < 0) {
+            player.head.y = parseInt(renderer.canvas.height / player.height, 10);
+        }
+
+        if (player.head.y > parseInt(renderer.canvas.height / player.height, 10)) {
+            player.head.y = 0;
+        }
+    });
+
     if (fruits.length > 0) {
         if (player.head.x === fruits[0].x && player.head.y === fruits[0].y) {
             fruits = [];
@@ -8064,6 +8089,13 @@ game.onRender = function () {
     fruits.forEach(function (fruit) {
         ctx.fillStyle = fruit.color;
         ctx.fillRect(fruit.x * fruit.width, fruit.y * fruit.height, fruit.width, fruit.height);
+    });
+
+    otherPlayers.map(function(player){
+        ctx.fillStyle = player.color;
+        player.pieces.forEach(function (piece) {
+            ctx.fillRect(piece.x, piece.y, player.width, player.height);
+        });
     });
 };
 
@@ -8101,6 +8133,11 @@ document.body.addEventListener('keydown', function (e) {
         case keys.UP:
         case keys.DOWN:
             player.setKey(key);
+            socket.emit(gameEvents.server_setPlayerKey, {
+                roomId: roomId,
+                playerId: player.id,
+                keyCode: key
+            })
             break;
         case keys.D:
             console.log(player.pieces);
@@ -8146,6 +8183,7 @@ socket.on(gameEvents.client_roomsList, function (rooms) {
         var roomWidget = document.createElement('div');
         roomWidget.textContent = room.players.length + ' player' + (room.players.length > 1 ? 's' : '');
         roomWidget.addEventListener('click', function () {
+                player.color = playerBColor;
             socket.emit(gameEvents.server_joinRoom, {
                     roomId: room.roomId,
                     playerId: player.id,
@@ -8183,6 +8221,15 @@ socket.on(gameEvents.client_roomJoined, function (data) {
     game.start();
 });
 
+socket.on(gameEvents.client_playerState, function(data){
+    console.log(gameEvents.client_playerState, data);
+    otherPlayers = data.filter(function(_player){
+        _player.width = BLOCK_WIDTH;
+        _player.height = BLOCK_HEIGHT;
+        return _player.id != player.id;
+    });
+});
+
 socket.on(gameEvents.client_newFruit, function (fruit) {
     console.log(gameEvents.client_newFruit, fruit);
     fruits[0] = new Fruit(fruit.x, fruit.y, '#c00', BLOCK_WIDTH, BLOCK_HEIGHT);
@@ -8195,9 +8242,11 @@ module.exports = {
     server_startRoom: 'server:startRoom',
     server_joinRoom: 'server:joinRoom',
     server_listRooms: 'server:listRooms',
+    server_setPlayerKey: 'server:setPlayerKey',
     client_newFruit: 'client:newFruit',
     client_roomJoined: 'client:roomJoined',
     client_roomsList: 'client:roomsList',
+    client_playerState: 'client:playerState'
 };
 
 },{}],58:[function(require,module,exports){
@@ -8242,7 +8291,7 @@ Game.prototype.render = function () {
 
 Game.prototype.loop = function (now) {
     this.raf = tick(this.loop.bind(this), this.fps);
-console.log('loop', now);
+
     var delta = now - this.lastTime;
     if (delta >= this.delay) {
         this.update(delta);
@@ -8350,13 +8399,13 @@ Snake.prototype.checkCollision = function(){
     }, this);
 
     if (collide) {
-        this.emit(Snake.events.COLLISION, {id: this.id, point: this.head, timestamp: performance.now()});
+        this.emit(Snake.events.COLLISION, {id: this.id, point: this.head});
     }
 };
 
 Snake.prototype.grow = function() {
     this.readyToGrow = true;
-    this.emit(Snake.events.POWER_UP, {id: this.id, size: this.pieces.length, timestamp: performance.now()});
+    this.emit(Snake.events.POWER_UP, {id: this.id, size: this.pieces.length});
 };
 
 module.exports = Snake;

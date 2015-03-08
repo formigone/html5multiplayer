@@ -7,7 +7,7 @@ var Room = require('./room.js');
 
 var BLOCK_WIDTH = 16;
 var BLOCK_HEIGHT = 16;
-var FPS = 20;
+var FPS = 60;
 
 /** @type {Array.<Room>} */
 var rooms = [];
@@ -43,6 +43,8 @@ module.exports = {
         var room = rooms[roomId];
         var snake = new Snake(playerId, playerX, playerY, playerColor, 1, 1);
         room.join(snake, socket);
+
+        socket.emit(gameEvents.client_roomJoined, {roomId: roomId});
     },
 
     startRoom: function(roomId) {
@@ -57,5 +59,20 @@ module.exports = {
 
         rooms[roomId].addFruit(pos);
         return pos;
+    },
+
+    setPlayerKey: function(roomId, playerId, keyCode) {
+        var players = rooms[roomId].getPlayers();
+        var data = players.map(function(player){
+            return player.snake;
+        });
+
+        players.map(function(player){
+            if (player.snake.id == playerId) {
+                player.snake.setKey(keyCode);
+            }
+
+            player.socket.emit(gameEvents.client_playerState, data);
+        });
     }
 };

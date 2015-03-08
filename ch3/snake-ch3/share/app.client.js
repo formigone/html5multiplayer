@@ -15,9 +15,12 @@ var fruitDelay = 1500;
 var lastFruit = 0;
 var fruitDelta = 0;
 var roomId = 0;
+var playerAColor = '#0c0';
+var playerBColor = '#cc7400';
 
 /** @type {Snake} */
-var player = new Snake(parseInt(Math.random() * 999999, 10), parseInt(Math.random() * window.innerWidth / 1.5, 10), parseInt(Math.random() * window.innerHeight / 1.5, 10), '#0c0', BLOCK_WIDTH, BLOCK_HEIGHT);
+var player = new Snake(parseInt(Math.random() * 999999, 10), parseInt(Math.random() * window.innerWidth / 1.5, 10), parseInt(Math.random() * window.innerHeight / 1.5, 10), playerAColor, BLOCK_WIDTH, BLOCK_HEIGHT);
+var otherPlayers = [];
 var fruits = [];
 var ctx = renderer.ctx;
 var scoreWidget = document.querySelector('#scoreA span');
@@ -83,6 +86,13 @@ game.onRender = function () {
         ctx.fillStyle = fruit.color;
         ctx.fillRect(fruit.x * fruit.width, fruit.y * fruit.height, fruit.width, fruit.height);
     });
+
+    otherPlayers.map(function(player){
+        ctx.fillStyle = player.color;
+        player.pieces.forEach(function (piece) {
+            ctx.fillRect(piece.x, piece.y, player.width, player.height);
+        });
+    });
 };
 
 player.on(Snake.events.POWER_UP, function (event) {
@@ -119,6 +129,11 @@ document.body.addEventListener('keydown', function (e) {
         case keys.UP:
         case keys.DOWN:
             player.setKey(key);
+            socket.emit(gameEvents.server_setPlayerKey, {
+                roomId: roomId,
+                playerId: player.id,
+                keyCode: key
+            })
             break;
         case keys.D:
             console.log(player.pieces);
@@ -164,6 +179,7 @@ socket.on(gameEvents.client_roomsList, function (rooms) {
         var roomWidget = document.createElement('div');
         roomWidget.textContent = room.players.length + ' player' + (room.players.length > 1 ? 's' : '');
         roomWidget.addEventListener('click', function () {
+                player.color = playerBColor;
             socket.emit(gameEvents.server_joinRoom, {
                     roomId: room.roomId,
                     playerId: player.id,
@@ -199,6 +215,15 @@ socket.on(gameEvents.client_roomJoined, function (data) {
         roomId: roomId
     });
     game.start();
+});
+
+socket.on(gameEvents.client_playerState, function(data){
+    console.log(gameEvents.client_playerState, data);
+    otherPlayers = data.filter(function(_player){
+        _player.width = BLOCK_WIDTH;
+        _player.height = BLOCK_HEIGHT;
+        return _player.id != player.id;
+    });
 });
 
 socket.on(gameEvents.client_newFruit, function (fruit) {

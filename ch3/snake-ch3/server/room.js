@@ -10,6 +10,8 @@ var fruitColor = '#c00';
 
 /** @type {Game} */
 var game = null;
+var gameUpdateRate = 1;
+var gameUpdates = 0;
 
 var Room = function (fps, worldWidth, worldHeight) {
     game = new Game(fps);
@@ -42,6 +44,16 @@ var Room = function (fps, worldWidth, worldHeight) {
                 }
             }
         });
+
+//        if (++gameUpdates % gameUpdateRate === 0) {
+            gameUpdates = 0;
+            var data = players.map(function(player){
+                return player.snake;
+            });
+            players.map(function(player){
+                player.socket.emit(gameEvents.client_playerState, data);
+            });
+//        }
     };
 
     this.players = players;
@@ -52,7 +64,7 @@ Room.prototype.start = function () {
 };
 
 Room.prototype.addFruit = function (pos) {
-    fruits[0] = new Fruit(pos.x, pos.y, fruitColor, 1, 1);
+    fruits[0] = new Fruit(parseInt(pos.x / 16, 10), parseInt(pos.y / 16, 10), fruitColor, 1, 1);
 };
 
 Room.prototype.join = function (snake, socket) {
@@ -62,6 +74,10 @@ Room.prototype.join = function (snake, socket) {
             socket: socket
         });
     }
+};
+
+Room.prototype.getPlayers = function(){
+    return players;
 };
 
 module.exports = Room;
