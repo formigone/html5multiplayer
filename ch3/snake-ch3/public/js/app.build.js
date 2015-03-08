@@ -7996,17 +7996,20 @@ var game = new Game(FPS);
 var fruitDelay = 1500;
 var lastFruit = 0;
 var fruitDelta = 0;
+var roomId = 0;
 
-var player = new Snake(1, 10, 10, '#0c0', BLOCK_WIDTH, BLOCK_HEIGHT);
+/** @type {Snake} */
+var player = new Snake(parseInt(Math.random() * 999999, 10), parseInt(Math.random() * window.innerWidth / 1.5, 10), parseInt(Math.random() * window.innerHeight / 1.5, 10), '#0c0', BLOCK_WIDTH, BLOCK_HEIGHT);
 var fruits = [];
 var ctx = renderer.ctx;
-var scoreWidgets = [
-    {
-        id: 1,
-        el: document.querySelector('#scoreA span')
-    }
-];
+var scoreWidget = document.querySelector('#scoreA span');
 var gameOver = document.getElementById('gameOver');
+var screens = {
+    main: document.getElementById('main'),
+    lobby: document.getElementById('lobby')
+};
+
+var roomList = document.getElementById('roomList');
 
 game.onUpdate = function (delta) {
     var now = performance.now();
@@ -8015,6 +8018,7 @@ game.onUpdate = function (delta) {
 
         if (fruitDelta >= fruitDelay) {
             socket.emit(gameEvents.server_spawnFruit, {
+                roomId: roomId,
                 maxWidth: parseInt(renderer.canvas.width / BLOCK_WIDTH / 2, 10),
                 maxHeight: parseInt(renderer.canvas.width / BLOCK_HEIGHT / 2, 10)
             });
@@ -8053,39 +8057,31 @@ game.onRender = function () {
     ctx.clearRect(0, 0, renderer.canvas.width, renderer.canvas.height);
 
     ctx.fillStyle = player.color;
-    player.pieces.forEach(function(piece){
+    player.pieces.forEach(function (piece) {
         ctx.fillRect(piece.x * player.width, piece.y * player.height, player.width, player.height);
     });
 
-    fruits.forEach(function(fruit){
+    fruits.forEach(function (fruit) {
         ctx.fillStyle = fruit.color;
         ctx.fillRect(fruit.x * fruit.width, fruit.y * fruit.height, fruit.width, fruit.height);
     });
 };
 
-player.on(Snake.events.POWER_UP, function(event){
+player.on(Snake.events.POWER_UP, function (event) {
     var score = event.size * 10;
-    scoreWidgets.filter(function(widget){
-        return widget.id === event.id;
-    })
-        .pop()
-        .el.textContent = '000000'.slice(0, - (score + '').length) + score + '';
+    scoreWidget.textContent = '000000'.slice(0, -(score + '').length) + score + '';
 });
 
-player.on(Snake.events.COLLISION, function(event){
-    scoreWidgets.filter(function(widget){
-        return widget.id === event.id;
-    })
-        .pop()
-        .el.parentElement.classList.add('gameOver');
+player.on(Snake.events.COLLISION, function (event) {
+    scoreWidget.parentElement.classList.add('gameOver');
 
     game.stop();
-    setTimeout(function(){
+    setTimeout(function () {
         ctx.fillStyle = '#f00';
         ctx.fillRect(event.point.x * player.width, event.point.y * player.height, player.width, player.height);
     }, 0);
 
-    setTimeout(function(){
+    setTimeout(function () {
         gameOver.classList.remove('hidden');
     }, 100);
 });
@@ -8140,21 +8136,68 @@ window.addEventListener('resize', resizeGame, false);
 window.addEventListener('orientationchange', resizeGame, false);
 resizeGame();
 
-socket.on('connect', function(){
+socket.on('connect', function () {
+    socket.emit(gameEvents.server_listRooms);
+});
+
+socket.on(gameEvents.client_roomsList, function (rooms) {
+    console.log(gameEvents.client_roomsList, rooms);
+    rooms.map(function (room) {
+        var roomWidget = document.createElement('div');
+        roomWidget.textContent = room.players.length + ' player' + (room.players.length > 1 ? 's' : '');
+        roomWidget.addEventListener('click', function () {
+            socket.emit(gameEvents.server_joinRoom, {
+                    roomId: room.roomId,
+                    playerId: player.id,
+                    playerX: player.head.x,
+                    playerY: player.head.y,
+                    playerColor: player.color
+                }
+            );
+        });
+        roomList.appendChild(roomWidget);
+    });
+
+    var roomWidget = document.createElement('div');
+    roomWidget.classList.add('newRoomWidget');
+    roomWidget.textContent = 'New Game';
+    roomWidget.addEventListener('click', function () {
+        socket.emit(gameEvents.server_newRoom, {
+            id: player.id,
+            x: player.head.x,
+            y: player.head.y,
+            color: player.color
+        });
+    });
+    roomList.appendChild(roomWidget);
+});
+
+socket.on(gameEvents.client_roomJoined, function (data) {
+    console.log(gameEvents.client_roomJoined, data);
+    roomId = data.roomId;
+    screens.lobby.classList.add('hidden');
+    screens.main.classList.remove('hidden');
+    socket.emit(gameEvents.server_startRoom, {
+        roomId: roomId
+    });
     game.start();
 });
 
-socket.on(gameEvents.client_newFruit, function(fruit){
+socket.on(gameEvents.client_newFruit, function (fruit) {
+    console.log(gameEvents.client_newFruit, fruit);
     fruits[0] = new Fruit(fruit.x, fruit.y, '#c00', BLOCK_WIDTH, BLOCK_HEIGHT);
-    console.log('new fruit:', fruits[0]);
 });
-
-//game.start();
 
 },{"./events.js":57,"./fruit.js":58,"./game.js":59,"./keyboard.js":60,"./renderer.js":61,"./snake.js":62,"socket.io-client":6}],57:[function(require,module,exports){
 module.exports = {
     server_spawnFruit: 'server:spawnFruit',
-    client_newFruit: 'client:newFruit'
+    server_newRoom: 'server:newRoom',
+    server_startRoom: 'server:startRoom',
+    server_joinRoom: 'server:joinRoom',
+    server_listRooms: 'server:listRooms',
+    client_newFruit: 'client:newFruit',
+    client_roomJoined: 'client:roomJoined',
+    client_roomsList: 'client:roomsList',
 };
 
 },{}],58:[function(require,module,exports){
@@ -8169,6 +8212,14 @@ var Fruit = function (x, y, color_hex, width, height) {
 module.exports = Fruit;
 
 },{}],59:[function(require,module,exports){
+var tick = (function(){
+    var now = 0;
+    var timer = (typeof requestAnimationFrame === 'undefined') ? function(cb, timeout){ setTimeout(function(){ cb(++now); }, timeout); } : requestAnimationFrame;
+    return function(cb, timeout){
+        return timer(cb, timeout);
+    }
+}());
+
 var Game = function (fps) {
     this.fps = fps;
     this.delay = 1000 / this.fps;
@@ -8190,8 +8241,8 @@ Game.prototype.render = function () {
 };
 
 Game.prototype.loop = function (now) {
-    this.raf = requestAnimationFrame(this.loop.bind(this));
-
+    this.raf = tick(this.loop.bind(this), this.fps);
+console.log('loop', now);
     var delta = now - this.lastTime;
     if (delta >= this.delay) {
         this.update(delta);

@@ -6,6 +6,7 @@ var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var io = require('socket.io')();
 var gameEvents = require('./share/events.js');
+var game = require('./server/app.js');
 
 var routes = require('./routes/index');
 
@@ -60,11 +61,33 @@ app.use(function(err, req, res, next) {
 io.on('connection', function(socket){
     console.log('new client');
 
+    socket.on(gameEvents.server_newRoom, function(data){
+        console.log('Message in: ', gameEvents.server_newRoom, data);
+        var roomId = game.newRoom();
+        game.joinRoom(roomId, this, data.id, data.x, data.y, data.color);
+
+        socket.emit(gameEvents.client_roomJoined, {roomId: roomId});
+    });
+
+    socket.on(gameEvents.server_joinRoom, function(data){
+        console.log('Message in: ', gameEvents.server_joinRoom, data);
+        game.joinRoom(data.roomId, this, data.playerId, data.playerX, data.playerY, data.playerColor);
+    });
+
+    socket.on(gameEvents.server_listRooms, function(){
+        console.log('Message in: ', gameEvents.server_listRooms);
+        var rooms = game.listRooms();
+        socket.emit(gameEvents.client_roomsList, rooms);
+    });
+
+    socket.on(gameEvents.server_startRoom, function(data){
+        console.log('Message in: ', gameEvents.server_startRoom, data);
+        game.startRoom(data.roomId);
+    });
+
     socket.on(gameEvents.server_spawnFruit, function(data){
-        var pos = {
-            x: parseInt(Math.random() * data.maxWidth, 10),
-            y: parseInt(Math.random() * data.maxHeight, 10)
-        };
+        console.log('Message in: ', gameEvents.server_spawnFruit, data);
+        var pos = game.spawnFruit(data.roomId, data.maxWidth, data.maxHeight);
         socket.emit(gameEvents.client_newFruit, pos);
     });
 });
