@@ -17,8 +17,8 @@ module.exports = {
      *
      * @returns {number} Room index
      */
-    newRoom: function(){
-        var room = new Room(FPS);
+    newRoom: function(maxWidth, maxHeight){
+        var room = new Room(FPS, maxWidth, maxHeight);
         rooms.push(room);
         return rooms.length - 1;
     },
@@ -40,6 +40,7 @@ module.exports = {
     },
 
     joinRoom: function(roomId, socket, playerId, playerX, playerY, playerColor) {
+        console.log('Server.App: Joined room', roomId);
         var room = rooms[roomId];
         var snake = new Snake(playerId, playerX, playerY, playerColor, 1, 1);
         room.join(snake, socket);
@@ -48,6 +49,7 @@ module.exports = {
     },
 
     startRoom: function(roomId) {
+        console.log('Server.App: Started room', roomId);
         rooms[roomId].start();
     },
 

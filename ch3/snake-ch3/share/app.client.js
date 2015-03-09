@@ -11,9 +11,9 @@ var BLOCK_HEIGHT = 16;
 var FPS = 20;
 var renderer = new Renderer(0, 0, document.getElementById('gameCanvas'));
 var game = new Game(FPS);
-var fruitDelay = 1500;
-var lastFruit = 0;
-var fruitDelta = 0;
+//var fruitDelay = 1500;
+//var lastFruit = 0;
+//var fruitDelta = 0;
 var roomId = 0;
 var playerAColor = '#0c0';
 var playerBColor = '#cc7400';
@@ -33,19 +33,19 @@ var screens = {
 var roomList = document.getElementById('roomList');
 
 game.onUpdate = function (delta) {
-    var now = performance.now();
-    if (fruits.length < 1) {
-        fruitDelta = now - lastFruit;
-
-        if (fruitDelta >= fruitDelay) {
-            socket.emit(gameEvents.server_spawnFruit, {
-                roomId: roomId,
-                maxWidth: parseInt(renderer.canvas.width / BLOCK_WIDTH / 2, 10),
-                maxHeight: parseInt(renderer.canvas.width / BLOCK_HEIGHT / 2, 10)
-            });
-        }
-    }
-
+//    var now = performance.now();
+//    if (fruits.length < 1) {
+//        fruitDelta = now - lastFruit;
+//
+//        if (fruitDelta >= fruitDelay) {
+//            socket.emit(gameEvents.server_spawnFruit, {
+//                roomId: roomId,
+//                maxWidth: parseInt(renderer.canvas.width / BLOCK_WIDTH / 2, 10),
+//                maxHeight: parseInt(renderer.canvas.width / BLOCK_HEIGHT / 2, 10)
+//            });
+//        }
+//    }
+//
     player.update(delta);
     player.checkCollision();
 
@@ -69,7 +69,7 @@ game.onUpdate = function (delta) {
         if (player.head.x === fruits[0].x && player.head.y === fruits[0].y) {
             fruits = [];
             player.grow();
-            lastFruit = now;
+//            lastFruit = now;
         }
     }
 };
@@ -90,7 +90,7 @@ game.onRender = function () {
     otherPlayers.map(function(player){
         ctx.fillStyle = player.color;
         player.pieces.forEach(function (piece) {
-            ctx.fillRect(piece.x, piece.y, player.width, player.height);
+            ctx.fillRect(piece.x * player.width, piece.y * player.height, player.width, player.height);
         });
     });
 };
@@ -200,7 +200,9 @@ socket.on(gameEvents.client_roomsList, function (rooms) {
             id: player.id,
             x: player.head.x,
             y: player.head.y,
-            color: player.color
+            color: player.color,
+            maxWidth: window.innerWidth,
+            maxHeight: window.innerHeight
         });
     });
     roomList.appendChild(roomWidget);
@@ -218,15 +220,22 @@ socket.on(gameEvents.client_roomJoined, function (data) {
 });
 
 socket.on(gameEvents.client_playerState, function(data){
-    console.log(gameEvents.client_playerState, data);
+//    console.log(gameEvents.client_playerState, data);
     otherPlayers = data.filter(function(_player){
         _player.width = BLOCK_WIDTH;
         _player.height = BLOCK_HEIGHT;
+        _player.head.x = parseInt(_player.head.x / BLOCK_WIDTH, 10);
+        _player.head.y = parseInt(_player.head.y / BLOCK_HEIGHT, 10);
+        _player.pieces = _player.pieces.map(function(piece){
+            piece.x = parseInt(piece.x / BLOCK_WIDTH, 10);
+            piece.y = parseInt(piece.y / BLOCK_HEIGHT, 10);
+            return piece;
+        });
         return _player.id != player.id;
     });
 });
 
 socket.on(gameEvents.client_newFruit, function (fruit) {
     console.log(gameEvents.client_newFruit, fruit);
-    fruits[0] = new Fruit(fruit.x, fruit.y, '#c00', BLOCK_WIDTH, BLOCK_HEIGHT);
+    fruits[0] = new Fruit(parseInt(fruit.x / BLOCK_WIDTH, 10), parseInt(fruit.y / BLOCK_HEIGHT, 10), '#c00', BLOCK_WIDTH, BLOCK_HEIGHT);
 });

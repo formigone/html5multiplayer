@@ -13,10 +13,38 @@ var game = null;
 var gameUpdateRate = 1;
 var gameUpdates = 0;
 
+var fruitDelay = 1500;
+var lastFruit = 0;
+var fruitDelta = 0;
+
 var Room = function (fps, worldWidth, worldHeight) {
+    console.log('Room::construct', [worldWidth, worldHeight]);
+    var self = this;
     game = new Game(fps);
 
     game.onUpdate = function (delta) {
+        var now = process.hrtime()[1];
+        if (fruits.length < 1) {
+            fruitDelta = now - lastFruit;
+
+            if (fruitDelta >= fruitDelay) {
+//                socket.emit(gameEvents.server_spawnFruit, {
+//                    roomId: roomId,
+//                    maxWidth: parseInt(renderer.canvas.width / BLOCK_WIDTH / 2, 10),
+//                    maxHeight: parseInt(renderer.canvas.width / BLOCK_HEIGHT / 2, 10)
+//                });
+                var pos = {
+                    x: parseInt(Math.random() * worldWidth, 10),
+                    y: parseInt(Math.random() * worldHeight, 10)
+                };
+
+                self.addFruit(pos);
+                players.map(function(player){
+                    player.socket.emit(gameEvents.client_newFruit, pos);
+                });
+            }
+        }
+
         players.map(function (player) {
             player.snake.update(delta);
             player.snake.checkCollision();
@@ -45,7 +73,7 @@ var Room = function (fps, worldWidth, worldHeight) {
             }
         });
 
-//        if (++gameUpdates % gameUpdateRate === 0) {
+        if (++gameUpdates % gameUpdateRate === 0) {
             gameUpdates = 0;
             var data = players.map(function(player){
                 return player.snake;
@@ -53,13 +81,15 @@ var Room = function (fps, worldWidth, worldHeight) {
             players.map(function(player){
                 player.socket.emit(gameEvents.client_playerState, data);
             });
-//        }
+            lastFruit = now;
+        }
     };
 
     this.players = players;
 };
 
 Room.prototype.start = function () {
+    console.log('Room::start');
     game.start();
 };
 

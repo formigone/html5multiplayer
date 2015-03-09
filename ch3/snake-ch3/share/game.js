@@ -1,10 +1,4 @@
-var tick = (function(){
-    var now = 0;
-    var timer = (typeof requestAnimationFrame === 'undefined') ? function(cb, timeout){ setTimeout(function(){ cb(++now); }, timeout); } : requestAnimationFrame;
-    return function(cb, timeout){
-        return timer(cb, timeout);
-    }
-}());
+var tick = require('./tick.js');
 
 var Game = function (fps) {
     this.fps = fps;
@@ -27,7 +21,7 @@ Game.prototype.render = function () {
 };
 
 Game.prototype.loop = function (now) {
-    this.raf = tick(this.loop.bind(this), this.fps);
+    this.raf = tick(this.loop.bind(this));
 
     var delta = now - this.lastTime;
     if (delta >= this.delay) {

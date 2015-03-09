@@ -7993,9 +7993,9 @@ var BLOCK_HEIGHT = 16;
 var FPS = 20;
 var renderer = new Renderer(0, 0, document.getElementById('gameCanvas'));
 var game = new Game(FPS);
-var fruitDelay = 1500;
-var lastFruit = 0;
-var fruitDelta = 0;
+//var fruitDelay = 1500;
+//var lastFruit = 0;
+//var fruitDelta = 0;
 var roomId = 0;
 var playerAColor = '#0c0';
 var playerBColor = '#cc7400';
@@ -8015,19 +8015,19 @@ var screens = {
 var roomList = document.getElementById('roomList');
 
 game.onUpdate = function (delta) {
-    var now = performance.now();
-    if (fruits.length < 1) {
-        fruitDelta = now - lastFruit;
-
-        if (fruitDelta >= fruitDelay) {
-            socket.emit(gameEvents.server_spawnFruit, {
-                roomId: roomId,
-                maxWidth: parseInt(renderer.canvas.width / BLOCK_WIDTH / 2, 10),
-                maxHeight: parseInt(renderer.canvas.width / BLOCK_HEIGHT / 2, 10)
-            });
-        }
-    }
-
+//    var now = performance.now();
+//    if (fruits.length < 1) {
+//        fruitDelta = now - lastFruit;
+//
+//        if (fruitDelta >= fruitDelay) {
+//            socket.emit(gameEvents.server_spawnFruit, {
+//                roomId: roomId,
+//                maxWidth: parseInt(renderer.canvas.width / BLOCK_WIDTH / 2, 10),
+//                maxHeight: parseInt(renderer.canvas.width / BLOCK_HEIGHT / 2, 10)
+//            });
+//        }
+//    }
+//
     player.update(delta);
     player.checkCollision();
 
@@ -8047,33 +8047,11 @@ game.onUpdate = function (delta) {
         player.head.y = 0;
     }
 
-    otherPlayers.map(function(player){
-        console.log('PPPP', player);return;
-        player.update(delta);
-        player.checkCollision();
-
-        if (player.head.x < 0) {
-            player.head.x = parseInt(renderer.canvas.width / player.width, 10);
-        }
-
-        if (player.head.x > parseInt(renderer.canvas.width / player.width, 10)) {
-            player.head.x = 0;
-        }
-
-        if (player.head.y < 0) {
-            player.head.y = parseInt(renderer.canvas.height / player.height, 10);
-        }
-
-        if (player.head.y > parseInt(renderer.canvas.height / player.height, 10)) {
-            player.head.y = 0;
-        }
-    });
-
     if (fruits.length > 0) {
         if (player.head.x === fruits[0].x && player.head.y === fruits[0].y) {
             fruits = [];
             player.grow();
-            lastFruit = now;
+//            lastFruit = now;
         }
     }
 };
@@ -8094,7 +8072,7 @@ game.onRender = function () {
     otherPlayers.map(function(player){
         ctx.fillStyle = player.color;
         player.pieces.forEach(function (piece) {
-            ctx.fillRect(piece.x, piece.y, player.width, player.height);
+            ctx.fillRect(piece.x * player.width, piece.y * player.height, player.width, player.height);
         });
     });
 };
@@ -8204,7 +8182,9 @@ socket.on(gameEvents.client_roomsList, function (rooms) {
             id: player.id,
             x: player.head.x,
             y: player.head.y,
-            color: player.color
+            color: player.color,
+            maxWidth: window.innerWidth,
+            maxHeight: window.innerHeight
         });
     });
     roomList.appendChild(roomWidget);
@@ -8222,17 +8202,24 @@ socket.on(gameEvents.client_roomJoined, function (data) {
 });
 
 socket.on(gameEvents.client_playerState, function(data){
-    console.log(gameEvents.client_playerState, data);
+//    console.log(gameEvents.client_playerState, data);
     otherPlayers = data.filter(function(_player){
         _player.width = BLOCK_WIDTH;
         _player.height = BLOCK_HEIGHT;
+        _player.head.x = parseInt(_player.head.x / BLOCK_WIDTH, 10);
+        _player.head.y = parseInt(_player.head.y / BLOCK_HEIGHT, 10);
+        _player.pieces = _player.pieces.map(function(piece){
+            piece.x = parseInt(piece.x / BLOCK_WIDTH, 10);
+            piece.y = parseInt(piece.y / BLOCK_HEIGHT, 10);
+            return piece;
+        });
         return _player.id != player.id;
     });
 });
 
 socket.on(gameEvents.client_newFruit, function (fruit) {
     console.log(gameEvents.client_newFruit, fruit);
-    fruits[0] = new Fruit(fruit.x, fruit.y, '#c00', BLOCK_WIDTH, BLOCK_HEIGHT);
+    fruits[0] = new Fruit(parseInt(fruit.x / BLOCK_WIDTH, 10), parseInt(fruit.y / BLOCK_HEIGHT, 10), '#c00', BLOCK_WIDTH, BLOCK_HEIGHT);
 });
 
 },{"./events.js":57,"./fruit.js":58,"./game.js":59,"./keyboard.js":60,"./renderer.js":61,"./snake.js":62,"socket.io-client":6}],57:[function(require,module,exports){
@@ -8261,13 +8248,7 @@ var Fruit = function (x, y, color_hex, width, height) {
 module.exports = Fruit;
 
 },{}],59:[function(require,module,exports){
-var tick = (function(){
-    var now = 0;
-    var timer = (typeof requestAnimationFrame === 'undefined') ? function(cb, timeout){ setTimeout(function(){ cb(++now); }, timeout); } : requestAnimationFrame;
-    return function(cb, timeout){
-        return timer(cb, timeout);
-    }
-}());
+var tick = require('./tick.js');
 
 var Game = function (fps) {
     this.fps = fps;
@@ -8290,7 +8271,7 @@ Game.prototype.render = function () {
 };
 
 Game.prototype.loop = function (now) {
-    this.raf = tick(this.loop.bind(this), this.fps);
+    this.raf = tick(this.loop.bind(this));
 
     var delta = now - this.lastTime;
     if (delta >= this.delay) {
@@ -8315,7 +8296,7 @@ Game.prototype.stop = function () {
 
 module.exports = Game;
 
-},{}],60:[function(require,module,exports){
+},{"./tick.js":63}],60:[function(require,module,exports){
 module.exports = {
     ESC: 27,
     SPACEBAR: 32,
@@ -8410,4 +8391,25 @@ Snake.prototype.grow = function() {
 
 module.exports = Snake;
 
-},{"./keyboard.js":60,"events":1,"util":5}]},{},[56]);
+},{"./keyboard.js":60,"events":1,"util":5}],63:[function(require,module,exports){
+var tick = function () {
+    var ticks = 0;
+    var timer;
+
+    if (typeof requestAnimationFrame === 'undefined') {
+        timer = function (cb) {
+            setTimeout(function () {
+                cb(++ticks);
+            }, 0);
+        }
+    } else {
+        timer = window.requestAnimationFrame;
+    }
+
+    return function (cb) {
+        return timer(cb);
+    }
+};
+
+module.exports = tick();
+},{}]},{},[56]);

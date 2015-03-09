@@ -63,7 +63,7 @@ io.on('connection', function(socket){
 
     socket.on(gameEvents.server_newRoom, function(data){
         console.log('Message in: ', gameEvents.server_newRoom, data);
-        var roomId = game.newRoom();
+        var roomId = game.newRoom(data.maxWidth, data.maxHeight);
         game.joinRoom(roomId, this, data.id, data.x, data.y, data.color);
     });
 
