@@ -7985,7 +7985,7 @@ var Game = require('./game.js');
 var Snake = require('./snake.js');
 var Fruit = require('./fruit.js');
 var keys = require('./keyboard.js');
-var socket = require('socket.io-client')('http://localhost:3000');
+var socket = require('socket.io-client')(window.location.origin);
 var gameEvents = require('./events.js');
 
 var BLOCK_WIDTH = 16;

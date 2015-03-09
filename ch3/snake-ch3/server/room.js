@@ -20,6 +20,7 @@ var fruitDelta = 0;
 var Room = function (fps, worldWidth, worldHeight) {
     console.log('Room::construct', [worldWidth, worldHeight]);
     var self = this;
+    this.players = players;
     game = new Game(fps);
 
     game.onUpdate = function (delta) {
@@ -84,8 +85,6 @@ var Room = function (fps, worldWidth, worldHeight) {
             lastFruit = now;
         }
     };
-
-    this.players = players;
 };
 
 Room.prototype.start = function () {
