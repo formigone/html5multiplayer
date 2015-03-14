@@ -20,8 +20,8 @@
 <body>
 <script>
     (function init() {
-        var WIDTH = parseInt(900 / 2.5, 10);
-        var HEIGHT = parseInt(1600 / 2.5, 10);
+        var WIDTH = parseInt(window.innerWidth, 10);
+        var HEIGHT = parseInt(window.innerHeight, 10);
         var HALF_WIDTH = parseInt(WIDTH / 2, 10);
         var HALF_HEIGHT = parseInt(HEIGHT / 2, 10);
 
@@ -45,7 +45,7 @@
 
         var ctx = canvas.getContext('2d');
         ctx.imageSmoothingEnabled = false;
-        ctx.fillStyle = '#55c';
+//        ctx.fillStyle = '#55c';
 
         var sprites = {
             explosion0: makeSprite(25, 25, 27, 370),
@@ -239,7 +239,7 @@
 
         canvas.addEventListener('click', function(e){
             currState = GAME_STATE.dead;
-            explosion.init({x: e.offsetX, y: e.offsetY});
+            explosion.init({x: e.offsetX - 12, y: e.offsetY - 12});
         });
 
         function start() {
