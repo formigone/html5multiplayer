@@ -1,0 +1,76 @@
+<!doctype html>
+<html>
+<head>
+    <title>Foever Mega Man</title>
+    <style>
+        html, body {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+    </style>
+</head>
+<body>
+<script>
+    (function init(){
+        var WIDTH = parseInt(900 / 2.5, 10);
+        var HEIGHT = parseInt(1600 / 2.5, 10);
+        var HALF_WIDTH = parseInt(WIDTH / 2, 10);
+        var HALF_HEIGHT = parseInt(HEIGHT / 2, 10);
+
+        var canvas = document.createElement('canvas');
+        canvas.width = WIDTH;
+        canvas.height = HEIGHT;
+
+        var ctx = canvas.createContext('2d');
+        ctx.imageSmoothingEnabled = false;
+
+        /**
+         *
+         * @param width
+         * @param height
+         * @param offsetX
+         * @param offsetY
+         * @returns {sprite}
+         */
+        function makeSprite(width, height, offsetX, offsetY) {
+            /** @typdeDef {{width: number, height: number, offsetX: number, offsetY: number}} sprite */
+            var sprite = {
+                width: width,
+                height: height,
+                offsetX: offsetX,
+                offsetY: offsetY
+            };
+
+            return sprite;
+        }
+
+        /**
+         *
+         * @param x
+         * @param y
+         * @param dx
+         * @param dy
+         * @param anim
+         * @param currFrame
+         * @returns {prop}
+         */
+        function makeProp(x, y, dx, dy, anim, currFrame) {
+            /** @typeDef {{x: number, y: number, dx: number, dy: number, anim: Array, currFrame: number}} prop */
+            var prop = {
+                x: x,
+                y: y,
+                dx: dx,
+                dy: dy,
+                anim: anim,
+                currFrame: currFrame || 0
+            }
+
+            return prop;
+        }
+
+    }());
+</script>
+</body>
+</html>
