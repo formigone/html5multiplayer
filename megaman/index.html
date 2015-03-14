@@ -8,23 +8,110 @@
             height: 100%;
             margin: 0;
             padding: 0;
+            background: #000;
+        }
+
+        canvas {
+            display: block;
+            margin: 0 auto;
         }
     </style>
 </head>
 <body>
 <script>
-    (function init(){
+    (function init() {
         var WIDTH = parseInt(900 / 2.5, 10);
         var HEIGHT = parseInt(1600 / 2.5, 10);
         var HALF_WIDTH = parseInt(WIDTH / 2, 10);
         var HALF_HEIGHT = parseInt(HEIGHT / 2, 10);
 
+        var fps = 60;
+        var freq = 1000 / fps;
+        var lastTime = 0;
+        var delta = 0;
+        var frames = 0;
+        var rafId = 0;
+
         var canvas = document.createElement('canvas');
         canvas.width = WIDTH;
         canvas.height = HEIGHT;
 
-        var ctx = canvas.createContext('2d');
+        var ctx = canvas.getContext('2d');
         ctx.imageSmoothingEnabled = false;
+
+        var sprites = {
+            explosion0: makeSprite(25, 25, 27, 370),
+            explosion1: makeSprite(25, 25, 1, 396),
+            explosion2: makeSprite(25, 25, 27, 396),
+            explosion3: makeSprite(25, 25, 1, 422),
+            explosion4: makeSprite(25, 25, 27, 422)
+        };
+
+        var explosionProp = makeProp(HALF_WIDTH, HALF_HEIGHT, 8, 8, [
+            sprites.explosion0,
+            sprites.explosion1,
+            sprites.explosion2,
+            sprites.explosion3,
+            sprites.explosion4
+        ]);
+
+        var explosion = makeEntity(explosionProp,
+                function onInit() {
+                    this.particles = [];
+                    for(var i = 0; i < 8; i++) {
+                        this.particles.push({
+                            x: this.x,
+                            y: this.y
+                        });
+                    }
+
+                    console.log(this);
+                },
+                function onUpdate(delta) {
+                    var mod10 = frames % 10;
+
+                    if (mod10 === 0) {
+                        explosion.currFrame = (explosion.currFrame + 1) % explosion.anim.length;
+                        explosion.particles[0].x += explosion.dx * delta / 100;
+                        explosion.particles[1].x -= explosion.dx * delta / 100;
+                        explosion.particles[2].y += explosion.dy * delta / 100;
+                        explosion.particles[3].y -= explosion.dy * delta / 100;
+                        explosion.particles[4].x += explosion.dx * delta / 100;
+                        explosion.particles[4].y += explosion.dy * delta / 100;
+                        explosion.particles[5].x -= explosion.dx * delta / 100;
+                        explosion.particles[5].y -= explosion.dy * delta / 100;
+                        explosion.particles[6].x += explosion.dx * delta / 100;
+                        explosion.particles[6].y -= explosion.dy * delta / 100;
+                        explosion.particles[7].x -= explosion.dx * delta / 100;
+                        explosion.particles[7].y += explosion.dy * delta / 100;
+                    }
+
+
+                }, function onRender(ctx) {
+                    var exp = explosion.anim[explosion.currFrame];
+
+                    explosion.particles.forEach(function(cell){
+                        ctx.drawImage(sprites.img, exp.x, exp.y, exp.width, exp.height, cell.x, cell.y, exp.width, exp.height);
+                    });
+                }
+        );
+
+        /**
+         *
+         * @param prop
+         * @param onUpdate
+         * @param onRender
+         * @return {entity}
+         */
+        function makeEntity(prop, onInit, onUpdate, onRender) {
+            /** @typeDef {{x: number, y: number, dx: number, dy: number, anim: Array, currFrame: number, init: Function, update: Function, render: Function}} entity */
+            var entity = prop;
+            entity.init = onInit.bind(prop);
+            entity.update = onUpdate.bind(prop);
+            entity.render = onRender.bind(prop);
+
+            return entity;
+        }
 
         /**
          *
@@ -39,8 +126,8 @@
             var sprite = {
                 width: width,
                 height: height,
-                offsetX: offsetX,
-                offsetY: offsetY
+                x: offsetX,
+                y: offsetY
             };
 
             return sprite;
@@ -69,6 +156,50 @@
 
             return prop;
         }
+
+
+        function preLoad(path, cb) {
+            var img = new Image();
+            img.onload = function () {
+                sprites.img = this;
+                cb();
+            };
+
+            img.src = path;
+        }
+
+        function update(delta) {
+            explosion.update(delta);
+        }
+
+        function render() {
+            ctx.clearRect(0, 0, WIDTH, HEIGHT);
+
+            explosion.render(ctx);
+
+            frames += 1;
+        }
+
+        function start() {
+            document.body.appendChild(canvas);
+            explosion.init();
+
+            function loop(now) {
+                delta = now - lastTime;
+                if (delta >= freq) {
+                    update(delta);
+                    render();
+
+                    lastTime = now;
+                }
+
+                rafId = requestAnimationFrame(loop, canvas);
+            }
+
+            loop(0);
+        }
+
+        preLoad('spark-tileset.png', start);
 
     }());
 </script>
