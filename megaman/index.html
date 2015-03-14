@@ -45,6 +45,7 @@
 
         var ctx = canvas.getContext('2d');
         ctx.imageSmoothingEnabled = false;
+        ctx.fillStyle = '#55c';
 
         var sprites = {
             explosion0: makeSprite(25, 25, 27, 370),
@@ -227,6 +228,7 @@
 
         function render() {
             ctx.clearRect(0, 0, WIDTH, HEIGHT);
+            ctx.fillRect(0, 0, WIDTH, HEIGHT);
 
             if (currState === GAME_STATE.dead) {
                 explosion.render(ctx);
