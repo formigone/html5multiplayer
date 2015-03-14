@@ -47,45 +47,56 @@
             explosion4: makeSprite(25, 25, 27, 422)
         };
 
-        var explosionProp = makeProp(HALF_WIDTH, HALF_HEIGHT, 8, 8, [
-            sprites.explosion0,
-            sprites.explosion1,
-            sprites.explosion2,
+        var explosionProp = makeProp(HALF_WIDTH, HALF_HEIGHT, 12, 12, [
+            sprites.explosion4,
             sprites.explosion3,
-            sprites.explosion4
+            sprites.explosion2,
+            sprites.explosion1,
+            sprites.explosion0
         ]);
 
         var explosion = makeEntity(explosionProp,
                 function onInit() {
                     this.particles = [];
-                    for(var i = 0; i < 8; i++) {
+                    for(var i = 0; i < 16; i++) {
                         this.particles.push({
                             x: this.x,
                             y: this.y
                         });
                     }
-
-                    console.log(this);
                 },
                 function onUpdate(delta) {
                     var mod10 = frames % 10;
 
                     if (mod10 === 0) {
                         explosion.currFrame = (explosion.currFrame + 1) % explosion.anim.length;
-                        explosion.particles[0].x += explosion.dx * delta / 100;
-                        explosion.particles[1].x -= explosion.dx * delta / 100;
-                        explosion.particles[2].y += explosion.dy * delta / 100;
-                        explosion.particles[3].y -= explosion.dy * delta / 100;
-                        explosion.particles[4].x += explosion.dx * delta / 100;
-                        explosion.particles[4].y += explosion.dy * delta / 100;
-                        explosion.particles[5].x -= explosion.dx * delta / 100;
-                        explosion.particles[5].y -= explosion.dy * delta / 100;
-                        explosion.particles[6].x += explosion.dx * delta / 100;
-                        explosion.particles[6].y -= explosion.dy * delta / 100;
-                        explosion.particles[7].x -= explosion.dx * delta / 100;
-                        explosion.particles[7].y += explosion.dy * delta / 100;
                     }
 
+                    explosion.particles[0].x += explosion.dx * delta / 100;
+                    explosion.particles[1].x -= explosion.dx * delta / 100;
+                    explosion.particles[2].y += explosion.dy * delta / 100;
+                    explosion.particles[3].y -= explosion.dy * delta / 100;
+                    explosion.particles[4].x += explosion.dx * 0.75 * delta / 100;
+                    explosion.particles[4].y += explosion.dx * 0.75 * delta / 100;
+                    explosion.particles[5].x -= explosion.dx * 0.75 * delta / 100;
+                    explosion.particles[5].y -= explosion.dy * 0.75 * delta / 100;
+                    explosion.particles[6].x += explosion.dx * 0.75 * delta / 100;
+                    explosion.particles[6].y -= explosion.dy * 0.75 * delta / 100;
+                    explosion.particles[7].x -= explosion.dx * 0.75 * delta / 100;
+                    explosion.particles[7].y += explosion.dy * 0.75 * delta / 100;
+
+                    explosion.particles[8].x += explosion.dx * delta / 50;
+                    explosion.particles[9].x -= explosion.dx * delta / 50;
+                    explosion.particles[10].y += explosion.dy * delta / 50;
+                    explosion.particles[11].y -= explosion.dy * delta / 50;
+                    explosion.particles[12].x += explosion.dx * 0.75 * delta / 50;
+                    explosion.particles[12].y += explosion.dx * 0.75 * delta / 50;
+                    explosion.particles[13].x -= explosion.dx * 0.75 * delta / 50;
+                    explosion.particles[13].y -= explosion.dy * 0.75 * delta / 50;
+                    explosion.particles[14].x += explosion.dx * 0.75 * delta / 50;
+                    explosion.particles[14].y -= explosion.dy * 0.75 * delta / 50;
+                    explosion.particles[15].x -= explosion.dx * 0.75 * delta / 50;
+                    explosion.particles[15].y += explosion.dy * 0.75 * delta / 50;
 
                 }, function onRender(ctx) {
                     var exp = explosion.anim[explosion.currFrame];
