@@ -2,6 +2,7 @@
 <html>
 <head>
     <title>Foever Mega Man</title>
+    <link href='http://fonts.googleapis.com/css?family=Press+Start+2P' rel='stylesheet' type='text/css'>
     <style>
         html, body {
             width: 100%;
@@ -9,6 +10,7 @@
             margin: 0;
             padding: 0;
             background: #000;
+            font-family: 'Press Start 2P', monospace;
         }
 
         canvas {
@@ -19,6 +21,14 @@
 </head>
 <body>
 <script>
+/**
+ *                ,---------
+ *               / FOREVER  \
+ *             /  MEGA  MAN  \
+ *            ----------------
+ * An HTML5 clone of one of the most challenging parts of this awesome game
+ * @author Rodrigo Silveira 2015-03-14
+ */
     (function init() {
         var WIDTH = parseInt(window.innerWidth, 10);
         var HEIGHT = parseInt(window.innerHeight, 10);
@@ -26,11 +36,12 @@
         var HALF_HEIGHT = parseInt(HEIGHT / 2, 10);
 
         var GAME_STATE = {
+            loading: -1,
             playing: 0,
             dead: 1
         };
 
-        var currState = GAME_STATE.playing;
+        var currState = GAME_STATE.loading;
 
         var fps = 60;
         var freq = 1000 / fps;
@@ -70,8 +81,11 @@
                     this.x = data.x;
                     this.y = data.y;
 
-                    sounds.death.currentTime = 0;
-                    sounds.death.play();
+                    if (sounds.death instanceof Audio) {
+                        sounds.death.currentTime = 0;
+                        sounds.death.play();
+                    }
+
                     this.framesPlayed = 0;
                     this.particles = [];
                     for(var i = 0; i < 16; i++) {
@@ -191,7 +205,7 @@
         function preLoad(imgPath, soundMap, cb) {
             var totalLoaded = 0;
             var soundKeys = Object.keys(soundMap);
-            var totalToLoad = soundKeys.length + 1;
+            var totalToLoad = soundKeys.length + 1 /* img */;
 
             var img = new Image();
             img.onload = function () {
@@ -220,7 +234,6 @@
         }
 
         function update(delta) {
-
             if (currState === GAME_STATE.dead) {
                 explosion.update(delta);
             }
@@ -228,22 +241,36 @@
 
         function render() {
             ctx.clearRect(0, 0, WIDTH, HEIGHT);
+            ctx.fillStyle = '#000';
             ctx.fillRect(0, 0, WIDTH, HEIGHT);
 
             if (currState === GAME_STATE.dead) {
                 explosion.render(ctx);
             }
 
+            if (currState === GAME_STATE.playing) {
+                ctx.fillStyle = '#fff';
+                ctx.textAlign = 'center';
+                if (frames % 60 < 35) {
+                    ctx.font = '2em "Press Start 2P"';
+                    ctx.fillText('CLICK TO DIE', HALF_WIDTH, HALF_HEIGHT + 50, WIDTH);
+                }
+                ctx.font = '1em "Press Start 2P"';
+                ctx.fillText('(c) RODRIGO SILVEIRA. MEGA MAN (c) CAPCOM 1990, 2004 ', HALF_WIDTH, HEIGHT - 30, WIDTH);
+            }
+
             frames += 1;
         }
 
-        canvas.addEventListener('click', function(e){
-            currState = GAME_STATE.dead;
-            explosion.init({x: e.offsetX - 12, y: e.offsetY - 12});
-        });
-
         function start() {
-            document.body.appendChild(canvas);
+            canvas.addEventListener('click', function(e){
+                if (currState === GAME_STATE.playing) {
+                    currState = GAME_STATE.dead;
+                    explosion.init({x: e.offsetX - 12, y: e.offsetY - 12});
+                }
+            });
+
+            currState = GAME_STATE.playing;
 
             function loop(now) {
                 delta = now - lastTime;
@@ -260,10 +287,21 @@
             loop(0);
         }
 
-        preLoad('spark-tileset.png', {
-            death: 'death.mp3'
-        }, start);
+        document.body.appendChild(canvas);
+        setTimeout(function(){
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, WIDTH, HEIGHT);
+            ctx.fillStyle = '#fff';
+            ctx.textAlign = 'center';
+            ctx.font = '2em "Press Start 2P"';
+            ctx.fillText('...', HALF_WIDTH, HALF_HEIGHT + 50, WIDTH);
+        }, 0);
 
+        setTimeout(function(){
+            preLoad('spark-tileset.png', {
+                death: 'death.mp3'
+            }, start);
+        }, 2000);
     }());
 </script>
 </body>
