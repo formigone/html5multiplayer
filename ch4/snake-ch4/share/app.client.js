@@ -231,6 +231,7 @@ socket.on(gameEvents.client_playerState, function(data){
     otherPlayers = data.filter(function(_player){
         if (_player.id == player.id) {
             serverState = _player;
+            serverState.currFrame = 0;
             return false;
         }
 

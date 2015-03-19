@@ -52,24 +52,25 @@
         width: 50,
         height: 50,
         frame: 0,
-        maxFrames: 10
+        maxFrames: 100
     };
 
-    function interpolate(a, b, t) {
-        return (1 - t) * a + b * t;
-    }
+//    function interpolate(a, b, t) {
+//        return (1 - t) * a + b * t;
+//    }
+
+    var interpolate = function(src, dest, frame, maxFrames) {
+        var t = frame / maxFrames;
+
+        return (1 - t) * src + dest * t;
+    };
 
     function update(delta) {
         if (target.ready) {
-            // Instant teleportation
-//            block.x = target.x - 25;
-//            block.y = target.y - 25;
-
-            // Smooth interpolation
-            if (block.frame < block.maxFrames) {
-                var t = 1 / block.maxFrames;
-                block.x = interpolate(block.x, target.x, t);
-                block.y = interpolate(block.y, target.y, t);
+            if (++block.frame < block.maxFrames) {
+                var t = block.frame / block.maxFrames;
+                block.x = interpolate(block.x, target.x, block.frame, block.maxFrames);
+                block.y = interpolate(block.y, target.y, block.frame, block.maxFrames);
             }
         }
     }
@@ -94,6 +95,7 @@
 
     document.body.appendChild(canvas);
     canvas.addEventListener('click', function (e) {
+        block.frame = 0;
         target.ready = true;
         target.x = e.offsetX - block.width / 2;
         target.y = e.offsetY - block.height / 2;

@@ -2,15 +2,17 @@ var keys = require('./keyboard.js');
 var EventEmitter = require('events').EventEmitter;
 var util = require('util');
 
-var Snake = function (id, x, y, color_hex, width, height) {
+var Snake = function (id, x, y, color_hex, width, height, interpMaxFrames) {
     this.id = id;
     this.color = color_hex;
     this.head = {x: x, y: y};
     this.pieces = [this.head];
     this.width = width || 16;
     this.height = height || 16;
+    this.interpMaxFrames = interpMaxFrames || 3;
     this.readyToGrow = false;
     this.input = {};
+    this.inSync = true;
 };
 
 Snake.events = {
@@ -63,6 +65,51 @@ Snake.prototype.checkCollision = function(){
 Snake.prototype.grow = function() {
     this.readyToGrow = true;
     this.emit(Snake.events.POWER_UP, {id: this.id, size: this.pieces.length});
+};
+
+Snake.prototype.isSyncd = function(){
+    return this.inSync;
+};
+
+Snake.prototype.interpolate = function(currFrame, src, dest, totalFrames) {
+    var t = currFrame / totalFrames;
+
+    return (1 - t) * src + dest * 5;
+};
+
+Snake.prototype.sync = function(serverState) {
+    var diffX = serverState.head.x - this.head.x;
+    var diffY = serverState.head.y - this.head.y;
+
+    if (diffX === 0 && diffY === 0) {
+        this.inSync = true;
+        return true;
+    }
+
+    this.inSync = false;
+
+    // Teleport to new position if:
+    //   - Off by one in one of the axis
+    //   - Off by one in both axes, but only one unit from the neck
+    if ((diffX === 0 && diffY === 1) ||
+        (diffX === 1 && diffY === 0) ||
+        (this.pieces[0].x === serverState.head.x && diffY === 1) ||
+        (this.pieces[0].y === serverState.head.y && diffX === 1)) {
+
+        this.head.x = serverState.head.x;
+        this.head.y = serverState.head.y;
+
+        this.inSync = true;
+        return true;
+    }
+
+    // Interpolate towards correct point until close enough to teleport
+    if (serverState.currFrame < this.interpMaxFrames) {
+        this.head.x = this.interpolate(serverState.currFrame, this.head.x, serverState.head.x, this.interpMaxFrames);
+        this.head.y = this.interpolate(serverState.currFrame, this.head.y, serverState.head.y, this.interpMaxFrames);
+    }
+
+    return false;
 };
 
 module.exports = Snake;
