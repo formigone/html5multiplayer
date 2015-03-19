@@ -1,0 +1,136 @@
+html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+}
+
+body {
+    height: 100%;
+    width: 100%;
+    padding: 0;
+    margin: 0;
+    background: #000;
+    overflow: hidden;
+}
+
+#gameArea {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+}
+
+#gameCanvas {
+    width: 100%;
+    height: 100%;
+    background: #fff;
+}
+
+#statsPanel {
+    position: absolute;
+    width: 100%;
+    height: 8%;
+    bottom: 0;
+    opacity: 0.8;
+}
+
+p {
+    font-family: 'Press Start 2P';
+    position: absolute;
+    padding: 0 20px;
+}
+
+#scoreA {
+    left: 0;
+}
+
+#scoreB {
+    right: 0;
+    display: none;
+}
+
+.gameOver {
+    color: #aaa;
+}
+
+.hidden {
+    display: none;
+}
+
+#gameOver {
+    color: #c00;
+    top: 25%;
+    text-align: center;
+    width: 100%;
+    font-size: 5em;
+    text-shadow: 0 5px 0 #333;
+}
+
+.animated {
+    -webkit-animation-duration: 2.5s;
+    animation-duration: 2.5s;
+    -webkit-animation-fill-mode: both;
+    animation-fill-mode: both;
+    -webkit-animation-timing-function: ease;
+    animation-timing-function: ease;
+    animation-iteration-count:infinite;
+    -webkit-animation-iteration-count:infinite;
+}
+
+@-webkit-keyframes pulse {
+    0% { -webkit-transform: scale(1); }
+    50% { -webkit-transform: scale(1.1); }
+    100% { -webkit-transform: scale(1); }
+}
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+.pulse {
+    -webkit-animation-name: pulse;
+    animation-name: pulse;
+}
+
+#lobby {
+    background: #fff;
+    width: 100%;
+    height: 100%;
+}
+
+#roomList div {
+    padding: 20px 20px 80px;
+    background: #0b97c4;
+    color: #fff;
+    margin: 20px;
+    float: left;
+    width: 25%;
+    min-width: 200px;
+    font-size: 3em;
+    font-family: monospace;
+    cursor: pointer;
+}
+
+#roomList div.newRoomWidget {
+    background: #0BC462;
+}
+
+h1, h2, h3 {
+    margin: 0;
+    padding: 10px;
+    color: #00A000;
+    text-align: center;
+    font-weight: 300;
+}
+
+h1 {
+    font-size: 5em;
+}
+
+h2 {
+    font-size: 3em;
+}
+
+h3 {
+    font-size: 1.5em;
+}

@@ -1,0 +1,16 @@
+extends layout
+
+block content
+  div#lobby
+    h1 Snake
+    div#roomList
+
+  div#main.hidden
+    div#gameArea
+      p#scoreA SCORE: <span>000000</span>
+      p#gameOver.animated.pulse.hidden Game Over
+      canvas#gameCanvas
+      div#statsPanel
+
+  script(src='/js/socket.io.js')
+  script(src='/js/app.build.js')

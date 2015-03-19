@@ -1,0 +1,13 @@
+{
+    "name": "snake-ch3",
+    "dependencies": {
+        "express": "*",
+        "express-generator": "*"
+    },
+    "devDependencies": {
+        "grunt": "~0.4.5",
+        "grunt-browserify": "~3.4.0",
+        "grunt-contrib-uglify": "~0.8.0",
+        "grunt-contrib-watch": "~0.6.1"
+    }
+}
