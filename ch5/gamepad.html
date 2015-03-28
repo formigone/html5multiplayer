@@ -1,0 +1,302 @@
+<!doctype html>
+<html>
+<head>
+    <title>Gamepad</title>
+    <link href='http://fonts.googleapis.com/css?family=Press+Start+2P' rel='stylesheet' type='text/css'>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background: #ddd;
+        }
+
+        .gamepad {
+            margin: 10% auto 0;
+            width: 700px;
+            height: 300px;
+            background: #aaa;
+            border: 15px solid #fff;
+            box-shadow: 0 0 1px #333;
+            overflow: hidden;
+        }
+
+        .gamepad .arrows {
+            padding: 0;
+            margin: 50px 0 0 50px;
+            list-style: none;
+            width: 200px;
+            height: 200px;
+            position: relative;
+            float: left;
+            border-radius: 100%;
+            box-shadow: inset 0 0 20px #555;
+        }
+
+        .gamepad .arrows .btn {
+            width: 50px;
+            height: 50px;
+            background: #555;
+            position: absolute;
+            transition: all 0.15s;
+        }
+
+        .arrow {
+            transition: all 0.15s;
+        }
+
+        .arrow-up {
+            width: 0;
+            height: 0;
+            border-left: 15px solid transparent;
+            border-right: 15px solid transparent;
+            border-bottom: 30px solid #333;
+            margin: 10px;
+        }
+
+        .btn:hover .arrow.arrow-up, .arrow-up.active {
+            border-bottom: 30px solid #888;
+        }
+
+        .btn:hover .arrow.arrow-down, .arrow-down.active {
+            border-top: 30px solid #888;
+        }
+
+        .btn:hover .arrow.arrow-left, .arrow-left.active {
+            border-right: 30px solid #888;
+        }
+
+        .btn:hover .arrow.arrow-right, .arrow-right.active {
+            border-left: 30px solid #888;
+        }
+
+        .arrow-down {
+            width: 0;
+            height: 0;
+            border-left: 15px solid transparent;
+            border-right: 15px solid transparent;
+            border-top: 30px solid #333;
+            margin: 10px;
+        }
+
+        .arrow-left {
+            width: 0;
+            height: 0;
+            border-top: 15px solid transparent;
+            border-bottom: 15px solid transparent;
+            border-right: 30px solid #333;
+            margin: 10px;
+        }
+
+        .arrow-right {
+            width: 0;
+            height: 0;
+            border-top: 15px solid transparent;
+            border-bottom: 15px solid transparent;
+            border-left: 30px solid #333;
+            margin: 10px;
+        }
+
+        .gamepad .arrows .btn.btn-center {
+            top: 75px;
+            left: 75px;
+        }
+
+        .gamepad .arrows .btn.btn-up {
+            top: 25px;
+            left: 75px;
+            border-radius: 5px 5px 0 0;
+        }
+
+        .gamepad .arrows .btn.btn-down {
+            bottom: 25px;
+            left: 75px;
+            border-radius: 0 0 5px 5px;
+        }
+
+        .gamepad .arrows .btn.btn-left {
+            top: 75px;
+            left: 25px;
+            border-radius: 5px 0 0 5px;
+        }
+
+        .gamepad .arrows .btn.btn-right {
+            top: 75px;
+            right: 25px;
+            border-radius: 0 5px 5px 0;
+        }
+
+        .gamepad .controls {
+            padding: 0;
+            margin: 50px 0 0;
+            list-style: none;
+            display: block;
+            float: left;
+            overflow: hidden;
+            width: 200px;
+        }
+
+        .gamepad .controls .btn {
+            display: block;
+            float: left;
+            width: 20px;
+            height: 65px;
+            margin: 80px 20px 0;
+            transform: rotateZ(35deg);
+            border-radius: 10px;
+            background: #555;
+            transition: all 0.15s;
+        }
+
+        .gamepad .controls .btn:first-child {
+            margin-left: 65px;
+        }
+
+        .gamepad .controls .btn:hover, .gamepad .controls .btn.active {
+            background: #333;
+            box-shadow: inset 0 5px 10px #000;
+            margin-top: 81px;
+        }
+
+        .gamepad .buttons {
+            padding: 0;
+            margin: 50px 50px 0 0;
+            list-style: none;
+            background: #888;
+            width: 200px;
+            height: 200px;
+            position: relative;
+            float: right;
+            transform: rotateZ(-25deg);
+            border-radius: 100%;
+        }
+
+        .gamepad .buttons .btn {
+            width: 50px;
+            height: 50px;
+            position: absolute;
+            border-radius: 100%;
+            transform: rotateZ(25deg);
+            text-align: center;
+            line-height: 300%;
+            font-size: 1em;
+            font-family: 'Press Start 2P';
+            color: #fff;
+            text-shadow: 1px 1px 3px #aaa;
+            transition: all 0.15s;
+        }
+
+        .gamepad .buttons .btn:hover, .gamepad .buttons .btn.active {
+            box-shadow: inset 0 5px 10px #000;
+            text-shadow: 0 5px 10px #333;
+        }
+
+        .gamepad .buttons .btn.btn-a {
+            top: 40px;
+            left: 35px;
+            background: #008012;
+        }
+
+        .gamepad .buttons .btn.btn-b {
+            top: 40px;
+            right: 35px;
+            background: #002264;
+        }
+
+        .gamepad .buttons .btn.btn-x {
+            bottom: 40px;
+            left: 35px;
+            background: #decf1e;
+        }
+
+        .gamepad .buttons .btn.btn-y {
+            bottom: 40px;
+            right: 35px;
+            background: #c00;
+        }
+    </style>
+</head>
+<body>
+
+<div class="gamepad">
+    <ul class="arrows">
+        <li class="btn btn-center"></li>
+        <li class="btn btn-up">
+            <div class="arrow arrow-up"></div>
+        </li>
+        <li class="btn btn-down">
+            <div class="arrow arrow-down"></div>
+        </li>
+        <li class="btn btn-left">
+            <div class="arrow arrow-left"></div>
+        </li>
+        <li class="btn btn-right">
+            <div class="arrow arrow-right"></div>
+        </li>
+    </ul>
+
+    <ul class="controls">
+        <li class="btn btn-select"></li>
+        <li class="btn btn-start"></li>
+    </ul>
+
+    <ul class="buttons">
+        <li class="btn btn-a">Y</li>
+        <li class="btn btn-b">X</li>
+        <li class="btn btn-x">B</li>
+        <li class="btn btn-y">A</li>
+    </ul>
+</div>
+
+<script>
+    var btns = {
+        arrow_up: document.querySelector('.btn .arrow-up'),
+        arrow_down: document.querySelector('.btn .arrow-down'),
+        arrow_left: document.querySelector('.btn .arrow-left'),
+        arrow_right: document.querySelector('.btn .arrow-right'),
+
+        button_a: document.querySelector('.buttons .btn-y'),
+        button_b: document.querySelector('.buttons .btn-x'),
+        button_x: document.querySelector('.buttons .btn-b'),
+        button_y: document.querySelector('.buttons .btn-a'),
+
+        button_select: document.querySelector('.controls .btn-select'),
+        button_start: document.querySelector('.controls .btn-start'),
+
+        keyCodes: {
+            37: 'arrow_left',
+            38: 'arrow_up',
+            39: 'arrow_right',
+            40: 'arrow_down',
+
+            32: 'button_a',
+            65: 'button_b',
+            68: 'button_x',
+            83: 'button_y',
+
+            27: 'button_select',
+            16: 'button_start'
+        }
+    };
+
+    function displayKey(keyCode, pressed) {
+        var classAction = pressed ? 'add' : 'remove';
+        if (btns.keyCodes[keyCode]) {
+            btns[btns.keyCodes[keyCode]].classList[classAction]('active');
+        }
+    }
+
+    document.body.addEventListener('keydown', function(e){
+        var keyCode = e.keyCode;
+        console.log(keyCode);
+        displayKey(keyCode, true);
+    });
+
+    document.body.addEventListener('keyup', function(e){
+        var keyCode = e.keyCode;
+        displayKey(keyCode, false);
+    });
+</script>
+</body>
+</html>

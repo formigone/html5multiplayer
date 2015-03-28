@@ -1,0 +1,117 @@
+<!doctype html>
+<html>
+<head>
+    <title>Fullscreeen</title>
+    <link href='http://fonts.googleapis.com/css?family=Press+Start+2P' rel='stylesheet' type='text/css'>
+    <style>
+        html, body {
+            padding: 0;
+            margin: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        ul {
+            overflow: auto;
+            padding: 0;
+            margin: 0;
+            height: 100%;
+            width: 100%;
+        }
+
+        li {
+            display: block;
+            float: left;
+            margin: 0;
+            padding: 0;
+            width: 50%;
+            height: 50%;
+        }
+
+        li span {
+            display: block;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            font-size: 12em;
+            line-height: 195%;
+            color: #fff;
+            text-shadow: 0 3px 5px #000;
+            background: #008012;
+            font-family: 'Press Start 2P';
+        }
+
+        li:nth-child(3n + 1) span {
+            background: #003908;
+        }
+
+        :-webkit-full-screen {
+            font-size: 50vw;
+            line-height: 1.25;
+        }
+
+        button {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+        }
+    </style>
+</head>
+<body>
+<ul>
+    <li>
+        <span>1</span>
+    </li>
+    <li>
+        <span>O</span>
+    </li>
+    <li>
+        <span>O</span>
+    </li>
+    <li>
+        <span>1</span>
+    </li>
+</ul>
+
+<button>Go Fullscreen</button>
+<script>
+    var reqFullscreen = (function () {
+        var method = (function () {
+            var el = document.createElement('div');
+            var supported = '';
+            var variations = [
+                'requestFullscreen',
+                'msRequestFullscreen',
+                'mozRequestFullScreen',
+                'webkitRequestFullscreen'
+            ];
+
+            variations.some(function (method) {
+                supported = method;
+                return el[method] instanceof Function;
+            });
+
+            return supported;
+        }());
+
+        return function (element) {
+            element[method]();
+        };
+    }());
+
+    var list = document.querySelector('ul');
+    var btn = document.querySelector('button');
+
+    list.addEventListener('click', function (event) {
+        var block = event.target;
+        reqFullscreen(block);
+    });
+
+    btn.addEventListener('click', function (event) {
+        var firstBlock = list.children[0].children[0];
+        reqFullscreen(firstBlock);
+    });
+</script>
+</body>
+</html>
