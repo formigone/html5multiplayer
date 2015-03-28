@@ -12,6 +12,9 @@
             background: #ddd;
         }
 
+        .hidden {
+            display: none;
+        }
         .gamepad {
             margin: 10% auto 0;
             width: 700px;
@@ -215,11 +218,39 @@
             right: 35px;
             background: #c00;
         }
+
+        .gamepad-type {
+            margin: 0;
+            padding: 1em 0 0;
+            font-weight: 300;
+            position: absolute;
+            font-family: 'Press Start 2P';
+            text-align: center;
+            width: 700px;
+            font-size: 1em;
+            color: #bbb;
+            text-shadow: 0 1px 1px #333, 0 -1px 1px #fff;
+        }
+
+        #info {
+            margin: 150px auto 0;
+            font-family: 'Press Start 2P';
+            color: #000;
+            text-align: center;
+            font-size: 10vw;
+            transition: all 1s;
+        }
+
+        #info:hover {
+            color: #c00;
+        }
     </style>
 </head>
 <body>
+<h1 id="info">PRESS START</h1>
+<div class="gamepad hidden">
+    <h1 class="gamepad-type">NO GAMEPAD CONNECTED</h1>
 
-<div class="gamepad">
     <ul class="arrows">
         <li class="btn btn-center"></li>
         <li class="btn btn-up">
@@ -249,6 +280,7 @@
     </ul>
 </div>
 
+<p id="log" style="text-align: center;display: none"></p>
 <script>
     var btns = {
         arrow_up: document.querySelector('.btn .arrow-up'),
@@ -277,8 +309,29 @@
 
             27: 'button_select',
             16: 'button_start'
+        },
+
+        keyNames: {
+            axe_left: 0,
+            axe_left_val: -1,
+
+            axe_right: 0,
+            axe_right_val: 1,
+
+            axe_up: 1,
+            axe_up_val: -1,
+
+            axe_down: 1,
+            axe_down_val: 1
         }
     };
+
+    Object.keys(btns.keyCodes).map(function(index){
+        btns.keyNames[btns.keyCodes[index]] = index;
+    });
+
+    var gamepadId = 0;
+    var gamepad = {};
 
     function displayKey(keyCode, pressed) {
         var classAction = pressed ? 'add' : 'remove';
@@ -287,16 +340,110 @@
         }
     }
 
-    document.body.addEventListener('keydown', function(e){
+    document.body.addEventListener('keydown', function (e) {
         var keyCode = e.keyCode;
-        console.log(keyCode);
         displayKey(keyCode, true);
     });
 
-    document.body.addEventListener('keyup', function(e){
+    document.body.addEventListener('keyup', function (e) {
         var keyCode = e.keyCode;
         displayKey(keyCode, false);
     });
+
+    window.addEventListener('gamepadconnected', function (e) {
+        _log('new gamepad connected');
+        document.querySelector('.gamepad').classList.remove('hidden');
+        document.querySelector('#info').classList.add('hidden');
+        document.querySelector('.gamepad .gamepad-type').textContent = e.gamepad.id;
+        update(0);
+    });
+
+    window.addEventListener("gamepaddisconnected", function (e) {
+        _log('gamepad disconnected');
+    });
+
+    function update(now) {
+        requestAnimationFrame(update);
+        gamepad = navigator.getGamepads()[gamepadId];
+
+        _log(gamepad.buttons.map(function (btn) {
+                    return '(' +
+                            (btn.pressed ? '+' : '-') +
+                            ') ';
+                }) + ' || ' +
+                gamepad.axes.map(function (axe, b, c) {
+                    console.log(axe, b, c);
+                    return '(' +
+                            (axe ? '+' : '-') +
+                            ') ';
+                })
+        );
+
+        if (gamepad.buttons[0].pressed) {
+            displayKey(btns.keyNames.button_x, true);
+        } else {
+            displayKey(btns.keyNames.button_x, false);
+        }
+
+        if (gamepad.buttons[1].pressed) {
+            displayKey(btns.keyNames.button_a, true);
+        } else {
+            displayKey(btns.keyNames.button_a, false);
+        }
+
+        if (gamepad.buttons[2].pressed) {
+            displayKey(btns.keyNames.button_b, true);
+        } else {
+            displayKey(btns.keyNames.button_b, false);
+        }
+
+        if (gamepad.buttons[3].pressed) {
+            displayKey(btns.keyNames.button_y, true);
+        } else {
+            displayKey(btns.keyNames.button_y, false);
+        }
+
+        if (gamepad.buttons[8].pressed) {
+            displayKey(btns.keyNames.button_select, true);
+        } else {
+            displayKey(btns.keyNames.button_select, false);
+        }
+
+        if (gamepad.buttons[9].pressed) {
+            displayKey(btns.keyNames.button_start, true);
+        } else {
+            displayKey(btns.keyNames.button_start, false);
+        }
+
+        if (gamepad.axes[btns.keyNames.axe_left] === btns.keyNames.axe_left_val) {
+            displayKey(btns.keyNames.arrow_left, true);
+        } else {
+            displayKey(btns.keyNames.arrow_left, false);
+        }
+
+        if (gamepad.axes[btns.keyNames.axe_down] === btns.keyNames.axe_down_val) {
+            displayKey(btns.keyNames.arrow_down, true);
+        } else {
+            displayKey(btns.keyNames.arrow_down, false);
+        }
+
+        if (gamepad.axes[btns.keyNames.axe_up] === btns.keyNames.axe_up_val) {
+            displayKey(btns.keyNames.arrow_up, true);
+        } else {
+            displayKey(btns.keyNames.arrow_up, false);
+        }
+
+        if (gamepad.axes[btns.keyNames.axe_right] === btns.keyNames.axe_right_val) {
+            displayKey(btns.keyNames.arrow_right, true);
+        } else {
+            displayKey(btns.keyNames.arrow_right, false);
+        }
+    }
+
+    var log = document.getElementById('log');
+    function _log(msg) {
+        log.textContent = msg;
+    }
 </script>
 </body>
 </html>
