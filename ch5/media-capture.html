@@ -1,0 +1,136 @@
+<!doctype html>
+<html>
+<head>
+    <title>Media Capture</title>
+    <link href='http://fonts.googleapis.com/css?family=Press+Start+2P' rel='stylesheet' type='text/css'>
+    <style>
+        html, body {
+            padding: 0;
+            margin: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            font-family: 'Press Start 2P';
+            background: #ffe87c;
+        }
+
+        .title {
+            padding: 50px 0;
+            width: 100%;
+            text-align: center;
+            font-size: 10vw;
+            text-shadow: 5px 5px 0 #000, 5px -5px 0 #000, -5px 5px 0 #000, -5px -5px 0 #000, 25px 25px 0 #002979;
+            color: #74a1f2;
+            margin-bottom: 0;
+            position: relative;
+            z-index: 9999;
+        }
+
+        #log {
+            display: none;
+            background: #000;
+            color: #0c0;
+            padding: 10px 20px;
+            margin: 0;
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 75px;
+            overflow-y: auto;
+        }
+
+        canvas {
+            position: absolute;
+            bottom: 0;
+            z-index: 10;
+        }
+    </style>
+</head>
+<body>
+<h1 class="title">Media Capture</h1>
+
+<p id="log"></p>
+<script>
+    function log(msg) {
+        var el = (function () {
+            return document.getElementById('log');
+        }());
+
+        var p = document.createElement('p');
+        var span = document.createElement('span');
+        span.textContent = ':> ';
+
+        var txt = document.createElement('span');
+        txt.textContent = msg;
+
+        p.appendChild(span);
+        p.appendChild(txt);
+        el.appendChild(p);
+
+        el.scrollTop += 100;
+    }
+
+    var canvas = document.createElement('canvas');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    var ctx = canvas.getContext('2d');
+    document.body.appendChild(canvas);
+
+    navigator.webkitGetUserMedia({audio: true}, function (e) {
+        log('got user media: ' + e.id);
+        log(e.toString());
+
+        var audioContext = new AudioContext();
+        var mic = audioContext.createMediaStreamSource(e);
+        var analyser = audioContext.createAnalyser();
+        mic.connect(analyser);
+
+        var biquadFilter = audioContext.createBiquadFilter();
+//        biquadFilter.type = "lowshelf";
+        biquadFilter.frequency.value = 100;
+        biquadFilter.gain.value = 500;
+
+        analyser.smoothingTimeConstant = 0.3;
+        analyser.fftSize = 128;
+        var bufferLength = analyser.frequencyBinCount;
+        var frequencyData = new Uint8Array(bufferLength);
+
+        console.log(mic);
+
+        visualize(e);
+
+        function visualize(stream) {
+            var WIDTH = canvas.width;
+            var HEIGHT = canvas.height;
+
+            var lastTime = 0;
+
+            function draw(now) {
+                requestAnimationFrame(draw);
+                if (now - lastTime >= 200) {
+                    ctx.clearRect(0, 0, WIDTH, HEIGHT);
+                    analyser.getByteFrequencyData(frequencyData);
+                    var barWidth = (WIDTH / bufferLength) * 2.5;
+                    var x = 0;
+
+                    log([].forEach.call(frequencyData, function (barHeight) {
+                        ctx.fillStyle = 'rgb(50, ' + (barHeight + 100) + ', 50)';
+                        ctx.fillRect(x, HEIGHT - barHeight / 1, barWidth, barHeight / 1);
+
+                        x += barWidth + 1;
+                    }));
+
+                    lastTime = now;
+                }
+            }
+
+            draw(0);
+        }
+
+    }, function (e) {
+        log('get user media => denied!');
+        log(e.name);
+    });
+</script>
+</body>
+</html>
