@@ -10,11 +10,13 @@
             width: 100%;
             height: 100%;
             background: #ddd;
+            overflow: hidden;
         }
 
         .hidden {
             display: none;
         }
+
         .gamepad {
             margin: 10% auto 0;
             width: 700px;
@@ -235,19 +237,78 @@
         #info {
             margin: 150px auto 0;
             font-family: 'Press Start 2P';
-            color: #000;
-            text-align: center;
-            font-size: 10vw;
-            transition: all 1s;
+            width: 100%;
+            padding: 0 5%;
+            color: #555;
+            -webkit-transform: rotate3d(1, 10, 1, 53deg);
+            -webkit-transform-style: preserve-3d;
         }
 
-        #info:hover {
+
+        #info span.anim {
+            -webkit-animation: spinPulse 5s infinite linear;
+        }
+
+        #info span.highlight {
+            color: #c00;
+            -webkit-animation: spinPulse 1ms ease-in;
+        }
+
+        #info span {
+            transition: all 1s;
+            display: block;
+            float: left;
+            font-size: 8vw;
+            -webkit-animation: growage 2s ease-in;
+        }
+
+        #info span:hover {
             color: #c00;
         }
+
+        @-webkit-keyframes spinPulse {
+            0% {
+                margin-top: -10px;
+                -webkit-transform: rotate3d(0, 0, 0, 0deg);
+                opacity: 1;
+            }
+
+            100% {
+                margin-top: 45%;
+                -webkit-transform: rotate3d(1, 1, 1, 1080deg);
+                opacity: 0.1;
+            }
+        }
+
+        @-webkit-keyframes growage {
+            0% {
+                margin: -100px -50px 0 0;
+                text-shadow: 0 500px 150px #000;
+                color: transparent;
+            }
+
+            100% {
+                color: transparent;
+            }
+        }
+
     </style>
 </head>
 <body>
-<h1 id="info">PRESS START</h1>
+<h1 id="info">
+    <span>R</span>
+    <span>I</span>
+    <span>G</span>
+    <span>O</span>
+    <span>'</span>
+    <span>S</span>
+    <span>&nbsp;</span>
+    <span>G</span>
+    <span>A</span>
+    <span>M</span>
+    <span>E</span>
+</h1>
+
 <div class="gamepad hidden">
     <h1 class="gamepad-type">NO GAMEPAD CONNECTED</h1>
 
@@ -282,6 +343,24 @@
 
 <p id="log" style="text-align: center;display: none"></p>
 <script>
+    setTimeout(function(){
+        var animDelay = 100;
+        var title = document.querySelectorAll('#info span');
+        [].map.call(title, function(letter, i){
+            setTimeout(function() {
+                letter.classList.add('anim');
+            }, animDelay + i * animDelay);
+
+            setTimeout(function() {
+                letter.classList.add('highlight');
+
+                setTimeout(function() {
+                    letter.classList.remove('highlight');
+                }, (animDelay + i * Math.random() * 100) * 3);
+            }, (animDelay + i * Math.random() * 100) * 1);
+        }, title);
+    }, 4200);
+
     var btns = {
         arrow_up: document.querySelector('.btn .arrow-up'),
         arrow_down: document.querySelector('.btn .arrow-down'),
@@ -326,7 +405,7 @@
         }
     };
 
-    Object.keys(btns.keyCodes).map(function(index){
+    Object.keys(btns.keyCodes).map(function (index) {
         btns.keyNames[btns.keyCodes[index]] = index;
     });
 
@@ -352,6 +431,8 @@
 
     window.addEventListener('gamepadconnected', function (e) {
         _log('new gamepad connected');
+        console.log(e);
+        return;
         document.querySelector('.gamepad').classList.remove('hidden');
         document.querySelector('#info').classList.add('hidden');
         document.querySelector('.gamepad .gamepad-type').textContent = e.gamepad.id;
@@ -364,7 +445,7 @@
 
     function update(now) {
         requestAnimationFrame(update);
-        gamepad = navigator.getGamepads()[gamepadId];
+        gamepad = navigator.getGamepads().item(gamepadId);
 
         _log(gamepad.buttons.map(function (btn) {
                     return '(' +
