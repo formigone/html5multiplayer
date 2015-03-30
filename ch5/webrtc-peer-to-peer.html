@@ -1,0 +1,247 @@
+<!doctype html>
+<html>
+<head>
+    <title>WebRTC: peer-to-peer</title>
+    <link href='http://fonts.googleapis.com/css?family=Press+Start+2P' rel='stylesheet' type='text/css'>
+    <style>
+        html, body {
+            padding: 20px;
+            margin: 0;
+            width: 95%;
+            height: 100%;
+            font-family: 'Press Start 2P';
+            background: #000;
+        }
+
+        body * {
+            color: #0c0;
+        }
+
+        body span.tag {
+            color: #008012;
+        }
+
+        body span.she {
+            color: #cc09cc;
+        }
+
+        body span.he {
+            color: #3270f2;
+        }
+
+        body span.sys {
+            color: #decf1e;
+        }
+
+        p {
+            line-height: 1.75em;
+        }
+
+        input {
+            border: 1px solid #aaa;
+            outline: none;
+            padding: 5px 10px;
+            margin: 10px;
+            width: 95%;
+            background: #333;
+            font-family: 'Press Start 2P';
+        }
+
+        #in {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            padding: 0;
+            margin: 0;
+            width: 100%;
+            background: #000;
+        }
+
+        #out {
+            margin-bottom: 50px;
+        }
+    </style>
+</head>
+<body>
+<h1>WebRTC: peer-to-peer chat</h1>
+<hr/>
+<div id="out"></div>
+<div id="outFooter"></div>
+<div id="in">
+    <input type="text" autofocus>
+</div>
+<script>
+
+    function makeMessage(msg, user, color) {
+        var container = document.createElement('p');
+        var tag = document.createElement('span');
+        var text = document.createElement('span');
+
+        if (color) {
+            tag.classList.add(color);
+        } else if (nickColor) {
+            tag.classList.add(nickColor);
+        }
+
+        tag.textContent = '[' + (user || nick) + '] ';
+        text.textContent = msg;
+
+        container.appendChild(tag);
+        container.appendChild(text);
+
+        var out = document.getElementById('out');
+        var footer = document.getElementById('outFooter');
+        out.appendChild(container);
+        footer.scrollIntoView();
+    }
+
+    var input = document.querySelector('input');
+    input.addEventListener('keyup', function (e) {
+        if (e.keyCode === 13 && this.value.trim().length > 0) {
+            var input = this.value.trim().split('#');
+            var key = input[0];
+            var val = input.length > 1 ? input[1] : '';
+            this.select();
+
+
+            switch (key) {
+                case ':nick':
+                    nick = val;
+                    if (input.length > 2) {
+                        nickColor = input[2];
+                    }
+                    makeMessage('new nick set');
+                    break;
+                case ':color':
+                    nickColor = val;
+                    makeMessage('color updated');
+                    break;
+                case ':offer':
+                    createOffer();
+                    break;
+                case ':remote':
+                    var offer = new RTCSessionDescription();
+                    offer.sdp = decodeURIComponent(val);
+                    offer.type = input[2];
+                    setRemoteDesc(offer);
+                    break;
+                case ':answer':
+                    answerOffer();
+                    break;
+                case ':ice':
+                    var RTCIceCandidateInit = JSON.parse(val);
+                    var candidate = new RTCIceCandidate(RTCIceCandidateInit);
+                    addIceCandidate(candidate);
+                    break;
+                default:
+                    sendMessage(key);
+            }
+        }
+    });
+
+    var pcConfig = {
+        iceServers: [{
+            url: 'stun:stun.l.google.com:19302'
+        }]
+    };
+
+    var pcOptions = {
+        optional: [{
+            RtpDataChannels: true
+        }]
+    };
+
+    var nick = 'anonymous';
+    var nickColor = 'sys';
+    var pc = new webkitRTCPeerConnection(pcConfig, pcOptions);
+    var dc = dc = pc.createDataChannel('packtRtc');
+
+
+    function createOffer() {
+        pc.createOffer(function (offer) {
+            makeMessage('offer: ' + encodeURIComponent(offer.sdp));
+            pc.setLocalDescription(new RTCSessionDescription(offer), function () {
+            }, function (e) {
+                console.log(e);
+                makeMessage('error creating offer');
+            });
+        });
+    }
+
+    function setRemoteDesc(offer) {
+        makeMessage('remote desc: ' + offer.sdp);
+        pc.setRemoteDescription(new RTCSessionDescription(offer), function () {
+        }, function (e) {
+            console.log(e);
+            makeMessage('error setting remote desc');
+        });
+    }
+
+    function answerOffer() {
+        pc.createAnswer(function (answer) {
+            makeMessage('answer: ' + encodeURIComponent(answer.sdp));
+            pc.setLocalDescription(new RTCSessionDescription(answer));
+        }, function (e) {
+            console.log(e);
+            makeMessage('error creating answer');
+        });
+    }
+
+    function addIceCandidate(candidate) {
+        pc.addIceCandidate(candidate);
+    }
+
+    function sendMessage(msg) {
+        if (dc.readyState === 'open') {
+            var data = {
+                msg: msg,
+                user: nick,
+                color: nickColor
+            };
+            makeMessage(msg);
+            dc.send(JSON.stringify(data));
+        } else {
+            makeMessage('Could not send message: DataChannel not yet open.');
+        }
+    }
+
+    pc.ondatachannel = function (event) {
+        makeMessage('onDataChannel', 'sys', 'sys');
+        console.log(event);
+    };
+
+    pc.oniceconnectionstatechange = function (event) {
+        makeMessage('pc.oniceconnectionstatechange: ' + dc.readyState, 'sys', 'sys');
+        console.log(event);
+    };
+
+    pc.onicecandidate = function (event) {
+        if (event.candidate) {
+            makeMessage('ice candidate: ' + JSON.stringify(event.candidate), 'sys', 'sys');
+        }
+
+        console.log(event);
+    };
+
+
+    dc.onmessage = function (event) {
+        var data = JSON.parse(event.data);
+        makeMessage(data.msg, data.user, data.color);
+        console.log("received: " + event.data);
+    };
+
+    dc.onopen = function () {
+        makeMessage('dataChannel open', 'sys', 'sys');
+    };
+
+    dc.onerror = function (e) {
+        makeMessage('dataChannel error: ' + e, 'sys', 'sys');
+        console.log(e);
+    };
+
+    dc.onclose = function () {
+        makeMessage('dataChannel close', 'sys', 'sys');
+    };
+</script>
+</body>
+</html>
