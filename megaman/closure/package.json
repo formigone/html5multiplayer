@@ -1,0 +1,16 @@
+{
+  "name": "closure",
+  "version": "0.0.0",
+  "description": "",
+  "main": "index.js",
+  "author": "",
+  "license": "BSD-2-Clause",
+  "devDependencies": {
+    "gulp": "~3.8.11",
+    "gulp-closure-compiler": "~0.2.18",
+    "gulp-closure-deps": "~0.4.0"
+  },
+  "dependencies": {
+    "closure-library": "~1.43629075.2"
+  }
+}
