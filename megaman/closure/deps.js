@@ -846,4 +846,5 @@ goog.addDependency('../../../../node_modules/closure-library/closure/goog/vec/ve
 goog.addDependency('../../../../node_modules/closure-library/closure/goog/vec/vec4.js', ['goog.vec.Vec4'], ['goog.vec'], false);
 goog.addDependency('../../../../node_modules/closure-library/closure/goog/webgl/webgl.js', ['goog.webgl'], [], false);
 goog.addDependency('../../../../node_modules/closure-library/closure/goog/window/window.js', ['goog.window'], ['goog.string', 'goog.userAgent'], false);
+goog.addDependency('../../../../src/rokko/graphics/Renderer.js', ['rokko.graphics.Renderer'], ['goog.dom'], false);
 goog.addDependency('../../../../src/rokko/main.js', ['rokko.main'], [], false);

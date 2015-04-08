@@ -1,5 +1,275 @@
 goog.require('rokko.main');
+goog.require('rokko.graphics.Renderer');
 
 function main(){
-    console.log('here');
+    var WIDTH = parseInt(window.innerWidth, 10);
+    var HEIGHT = parseInt(window.innerHeight, 10);
+    var HALF_WIDTH = parseInt(WIDTH / 2, 10);
+    var HALF_HEIGHT = parseInt(HEIGHT / 2, 10);
+
+    var GAME_STATE = {
+        loading: -1,
+        playing: 0,
+        dead: 1
+    };
+
+    var currState = GAME_STATE.loading;
+
+    var fps = 60;
+    var freq = 1000 / fps;
+    var lastTime = 0;
+    var delta = 0;
+    var frames = 0;
+    var rafId = 0;
+
+    var renderer = new rokko.graphics.Renderer(WIDTH, HEIGHT);
+
+    var sprites = {
+        explosion0: makeSprite(25, 25, 27, 370),
+        explosion1: makeSprite(25, 25, 1, 396),
+        explosion2: makeSprite(25, 25, 27, 396),
+        explosion3: makeSprite(25, 25, 1, 422),
+        explosion4: makeSprite(25, 25, 27, 422),
+        megamanRight: makeSprite(26, 30, 9, 449),
+        megamanRightBlink: makeSprite(26, 30, 36, 449),
+        megamanLeft: makeSprite(26, 30, 36, 481),
+        megamanLeftBlink: makeSprite(26, 30, 36, 449)
+    };
+
+    var sounds = {};
+
+    var explosionProp = makeProp(HALF_WIDTH, HALF_HEIGHT, 12, 12, [
+        sprites.explosion4,
+        sprites.explosion3,
+        sprites.explosion2,
+        sprites.explosion1,
+        sprites.explosion0
+    ]);
+
+    var explosion = makeEntity(explosionProp,
+        function onInit(data) {
+            this.x = data.x;
+            this.y = data.y;
+
+            if (sounds.death instanceof Audio) {
+                sounds.death.currentTime = 0;
+                sounds.death.play();
+            }
+
+            this.framesPlayed = 0;
+            this.particles = [];
+            for (var i = 0; i < 16; i++) {
+                this.particles.push({
+                    x: this.x,
+                    y: this.y
+                });
+            }
+        },
+        function onUpdate(delta) {
+            var mod10 = frames % 10;
+
+            if (mod10 === 0) {
+                this.currFrame = (this.currFrame + 1) % this.anim.length;
+            }
+
+            if (this.framesPlayed > 2) {
+                this.particles[0].x += this.dx * delta / 100;
+                this.particles[1].x -= this.dx * delta / 100;
+                this.particles[2].y += this.dy * delta / 100;
+                this.particles[3].y -= this.dy * delta / 100;
+                this.particles[4].x += this.dx * 0.75 * delta / 100;
+                this.particles[4].y += this.dx * 0.75 * delta / 100;
+                this.particles[5].x -= this.dx * 0.75 * delta / 100;
+                this.particles[5].y -= this.dy * 0.75 * delta / 100;
+                this.particles[6].x += this.dx * 0.75 * delta / 100;
+                this.particles[6].y -= this.dy * 0.75 * delta / 100;
+                this.particles[7].x -= this.dx * 0.75 * delta / 100;
+                this.particles[7].y += this.dy * 0.75 * delta / 100;
+
+                this.particles[8].x += this.dx * delta / 50;
+                this.particles[9].x -= this.dx * delta / 50;
+                this.particles[10].y += this.dy * delta / 50;
+                this.particles[11].y -= this.dy * delta / 50;
+                this.particles[12].x += this.dx * 0.75 * delta / 50;
+                this.particles[12].y += this.dx * 0.75 * delta / 50;
+                this.particles[13].x -= this.dx * 0.75 * delta / 50;
+                this.particles[13].y -= this.dy * 0.75 * delta / 50;
+                this.particles[14].x += this.dx * 0.75 * delta / 50;
+                this.particles[14].y -= this.dy * 0.75 * delta / 50;
+                this.particles[15].x -= this.dx * 0.75 * delta / 50;
+                this.particles[15].y += this.dy * 0.75 * delta / 50;
+            }
+
+            this.framesPlayed += 1;
+        }, function onRender(ctx) {
+            var exp = this.anim[this.currFrame];
+
+            this.particles.forEach(function (cell) {
+                ctx.drawImage(sprites.img, exp.x, exp.y, exp.width, exp.height, cell.x, cell.y, exp.width, exp.height);
+            });
+        }
+    );
+
+    /**
+     *
+     * @param prop
+     * @param onUpdate
+     * @param onRender
+     * @return {entity}
+     */
+    function makeEntity(prop, onInit, onUpdate, onRender) {
+        /** @typeDef {{x: number, y: number, dx: number, dy: number, anim: Array, currFrame: number, init: Function, update: Function, render: Function}} entity */
+        var entity = prop;
+        entity.init = onInit.bind(prop);
+        entity.update = onUpdate.bind(prop);
+        entity.render = onRender.bind(prop);
+
+        return entity;
+    }
+
+    /**
+     *
+     * @param width
+     * @param height
+     * @param offsetX
+     * @param offsetY
+     * @returns {sprite}
+     */
+    function makeSprite(width, height, offsetX, offsetY) {
+        /** @typdeDef {{width: number, height: number, offsetX: number, offsetY: number}} sprite */
+        var sprite = {
+            width: width,
+            height: height,
+            x: offsetX,
+            y: offsetY
+        };
+
+        return sprite;
+    }
+
+    /**
+     *
+     * @param x
+     * @param y
+     * @param dx
+     * @param dy
+     * @param anim
+     * @param currFrame
+     * @returns {prop}
+     */
+    function makeProp(x, y, dx, dy, anim, currFrame) {
+        /** @typeDef {{x: number, y: number, dx: number, dy: number, anim: Array, currFrame: number}} prop */
+        var prop = {
+            x: x,
+            y: y,
+            dx: dx,
+            dy: dy,
+            anim: anim,
+            currFrame: currFrame || 0
+        }
+
+        return prop;
+    }
+
+
+    function preLoad(imgPath, soundMap, cb) {
+        var totalLoaded = 0;
+        var soundKeys = Object.keys(soundMap);
+        var totalToLoad = soundKeys.length + 1 /* img */;
+
+        var img = new Image();
+        img.onload = function () {
+            sprites.img = this;
+            totalLoaded += 1;
+            doIfDone();
+        };
+
+        img.src = imgPath;
+
+        soundKeys.map(function (key) {
+            var sound = new Audio();
+            sound.addEventListener('canplaythrough', function () {
+                totalLoaded += 1;
+                doIfDone();
+            });
+            sound.src = soundMap[key];
+            sounds[key] = sound;
+        });
+
+        function doIfDone() {
+            if (totalLoaded >= totalToLoad) {
+                cb();
+            }
+        }
+    }
+
+    function update(delta) {
+        if (currState === GAME_STATE.dead) {
+            explosion.update(delta);
+        }
+    }
+
+    function render() {
+        ctx.clearRect(0, 0, WIDTH, HEIGHT);
+        ctx.fillStyle = '#000';
+        ctx.fillRect(0, 0, WIDTH, HEIGHT);
+
+        if (currState === GAME_STATE.dead) {
+            explosion.render(ctx);
+        }
+
+        if (currState === GAME_STATE.playing) {
+            ctx.fillStyle = '#fff';
+            ctx.textAlign = 'center';
+            if (frames % 60 < 35) {
+                ctx.font = '2em "Press Start 2P"';
+                ctx.fillText('CLICK TO DIE', HALF_WIDTH, HALF_HEIGHT + 50, WIDTH);
+            }
+            ctx.font = '1em "Press Start 2P"';
+            ctx.fillText('(c) RODRIGO SILVEIRA. MEGA MAN (c) CAPCOM 1990, 2004 ', HALF_WIDTH, HEIGHT - 30, WIDTH);
+        }
+
+        frames += 1;
+    }
+
+    function start() {
+        canvas.addEventListener('click', function (e) {
+            if (currState === GAME_STATE.playing) {
+                currState = GAME_STATE.dead;
+                explosion.init({x: e.offsetX - 12, y: e.offsetY - 12});
+            }
+        });
+
+        currState = GAME_STATE.playing;
+
+        function loop(now) {
+            delta = now - lastTime;
+            if (delta >= freq) {
+                update(delta);
+                render();
+
+                lastTime = now;
+            }
+
+            rafId = requestAnimationFrame(loop, canvas);
+        }
+
+        loop(0);
+    }
+
+    renderer.bindTo(document.body);
+    setTimeout(function () {
+        ctx.fillStyle = '#000';
+        ctx.fillRect(0, 0, WIDTH, HEIGHT);
+        ctx.fillStyle = '#fff';
+        ctx.textAlign = 'center';
+        ctx.font = '2em "Press Start 2P"';
+        ctx.fillText('...', HALF_WIDTH, HALF_HEIGHT + 50, WIDTH);
+    }, 0);
+
+    setTimeout(function () {
+        preLoad('/img/spark-tileset.png', {
+            death: '/audio/death.mp3'
+        }, start);
+    }, 2000);
 }
