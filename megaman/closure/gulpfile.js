@@ -21,12 +21,12 @@ gulp.task('deps', function () {
 
 
 gulp.task('build', function () {
-    gulp.src(['main.js', 'src/**/*.js', 'node_modules/closure-library/closure/goog/**/*.js'])
+    gulp.src(['index.js', 'game.js', 'src/**/*.js', 'node_modules/closure-library/closure/goog/**/*.js'])
         .pipe(closureCompiler({
             compilerPath: '/usr/local/google-closure/compiler.jar',
-            fileName: '../game.min.js',
+            fileName: '../dist/game.min.js',
             compilerFlags: {
-                closure_entry_point: 'rokko.main',
+                closure_entry_point: 'rokko.main.start',
                 compilation_level: 'ADVANCED_OPTIMIZATIONS',
                 define: [
                     "goog.DEBUG=false"

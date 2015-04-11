@@ -1,8 +1,8 @@
 {
 "version":3,
-"file":"../game.min.js",
+"file":"../dist/game.min.js",
 "lineCount":1,
-"mappings":";",
-"sources":[],
-"names":[]
+"mappings":"AAAyBA,IAGzB;",
+"sources":["index.js"],
+"names":["rokko.main.start"]
 }

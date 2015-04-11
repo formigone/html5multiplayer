@@ -1,4 +1,5 @@
-goog.require('rokko.main');
+goog.provide('rokko.main');
+
 goog.require('rokko.graphics.Renderer');
 goog.require('rokko.scene');
 goog.require('rokko.scene.SceneManager');
@@ -6,7 +7,10 @@ goog.require('rokko.game');
 
 goog.require('goog.dom.fullscreen');
 
-function main(){
+/**
+ *
+ */
+rokko.main.start = function(){
     var WIDTH = 800;
     var HEIGHT = 450;
     var HALF_WIDTH = parseInt(WIDTH / 2, 10);
@@ -44,7 +48,23 @@ function main(){
     var gameOver = new rokko.Scene({
         props: {
             text: {y: HALF_HEIGHT + 50, i: 0},
-            img: new Image()
+            img: new Image(),
+            frames: [
+                {x: 13, y: 13, w: 37, h: 53},
+                {x: 230, y: 13, w: 32, h: 52},
+                {x: 274, y: 13, w: 32, h: 52},
+                {x: 316, y: 13, w: 32, h: 52},
+                {x: 355, y: 13, w: 38, h: 52},
+                {x: 404, y: 13, w: 32, h: 52},
+                {x: 440, y: 13, w: 32, h: 52},
+                {x: 480, y: 13, w: 32, h: 52},
+                {x: 517, y: 13, w: 38, h: 52},
+                {x: 517, y: 13, w: 34, h: 52},
+                {x: 561, y: 13, w: 37, h: 52},
+                {x: 609, y: 13, w: 34, h: 52},
+            ],
+            currFrame: 0,
+            mm: {x: HALF_WIDTH, y: HEIGHT - 200, dx: 0.15}
         },
         onLoad: function(){
             this.props.img.src = '/img/powerup.png';
@@ -54,12 +74,26 @@ function main(){
             text.y = (Math.sin(text.i) * 30) + 10;
             text.i += 0.05;
             text.y += 200;
+
+            this.props.mm.x += this.props.mm.dx * dt;
+            if (this.props.mm.x > WIDTH) {
+                this.props.mm.x = -32;
+            }
         },
         onRender: function(renderer, frames){
             var ctx = renderer.ctx;
+            var anim = this.props.frames;
+            var frame = anim[this.props.currFrame];
+
+            if (frames % 3 === 0) {
+                this.props.currFrame += 1;
+                if (this.props.currFrame >= anim.length) {
+                    this.props.currFrame = 1;
+                }
+            }
 
             ctx.clearRect(0, 0, WIDTH, HEIGHT);
-            ctx.fillStyle = '#000';
+            ctx.fillStyle = '#fff';
             ctx.fillRect(0, 0, WIDTH, HEIGHT);
 
             ctx.fillStyle = '#c00';
@@ -68,7 +102,7 @@ function main(){
             ctx.font = '2em "Press Start 2P"';
             ctx.fillText('GAME OVER!', HALF_WIDTH, this.props.text.y, WIDTH);
 
-            ctx.drawImage(this.props.img, 13, 13, 37, 53, HALF_WIDTH, HEIGHT - 200, 37, 53);
+            ctx.drawImage(this.props.img, frame.x, frame.y, frame.w, frame.h, this.props.mm.x, HEIGHT - 200, frame.w,frame.h);
         }
     });
 
@@ -84,4 +118,4 @@ function main(){
     //    goog.dom.fullscreen.requestFullScreen(renderer.canvas);
         game.activateScene();
     //});
-}
+};
