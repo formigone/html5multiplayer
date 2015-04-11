@@ -8,9 +8,9 @@ goog.require('rokko.game');
 goog.require('goog.dom.fullscreen');
 
 /**
- *
+ * @export
  */
-rokko.main.start = function(){
+rokko.main.play = function(){
     var WIDTH = 800;
     var HEIGHT = 450;
     var HALF_WIDTH = parseInt(WIDTH / 2, 10);
@@ -61,7 +61,7 @@ rokko.main.start = function(){
                 {x: 517, y: 13, w: 38, h: 52},
                 {x: 517, y: 13, w: 34, h: 52},
                 {x: 561, y: 13, w: 37, h: 52},
-                {x: 609, y: 13, w: 34, h: 52},
+                {x: 609, y: 13, w: 34, h: 52}
             ],
             currFrame: 0,
             mm: {x: HALF_WIDTH, y: HEIGHT - 200, dx: 0.15}
@@ -119,3 +119,5 @@ rokko.main.start = function(){
         game.activateScene();
     //});
 };
+
+rokko.play();
