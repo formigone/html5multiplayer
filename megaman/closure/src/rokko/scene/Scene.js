@@ -4,18 +4,20 @@ goog.require('rokko.graphics.Renderer');
 
 /**
  *
- * @param {Object} callbacks
+ * @param {Object=} options
  * @constructor
  */
-rokko.Scene = function (callbacks) {
+rokko.Scene = function (options) {
+    this.props = options.props || {};
+
     this.onLoad = goog.nullFunction;
     this.onUnload = goog.nullFunction;
     this.onUpdate = goog.nullFunction;
     this.onRender = goog.nullFunction;
 
     ['onLoad', 'onUnload', 'onUpdate', 'onRender'].forEach(function(method){
-        if (callbacks[method] instanceof Function){
-            this[method] = callbacks[method];
+        if (options[method] instanceof Function){
+            this[method] = options[method];
         }
     }.bind(this));
 };
@@ -43,5 +45,4 @@ rokko.Scene.prototype.update = function(dt){
  */
 rokko.Scene.prototype.render = function(renderer, frames){
     this.onRender(renderer, frames);
-    console.log('here', this.onRender, this);
 };

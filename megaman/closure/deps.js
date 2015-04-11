@@ -846,7 +846,8 @@ goog.addDependency('../../../../node_modules/closure-library/closure/goog/vec/ve
 goog.addDependency('../../../../node_modules/closure-library/closure/goog/vec/vec4.js', ['goog.vec.Vec4'], ['goog.vec'], false);
 goog.addDependency('../../../../node_modules/closure-library/closure/goog/webgl/webgl.js', ['goog.webgl'], [], false);
 goog.addDependency('../../../../node_modules/closure-library/closure/goog/window/window.js', ['goog.window'], ['goog.string', 'goog.userAgent'], false);
-goog.addDependency('../../../../src/rokko/game/Game.js', ['rokko.game'], [], false);
+goog.addDependency('../../../../src/rokko/game/Game.js', ['rokko.game'], ['rokko.graphics.Renderer'], false);
 goog.addDependency('../../../../src/rokko/graphics/Renderer.js', ['rokko.graphics.Renderer'], ['goog.dom'], false);
 goog.addDependency('../../../../src/rokko/main.js', ['rokko.main'], [], false);
-goog.addDependency('../../../../src/rokko/scene/Scene.js', ['rokko.scene'], [], false);
+goog.addDependency('../../../../src/rokko/scene/Scene.js', ['rokko.scene'], ['rokko.graphics.Renderer'], false);
+goog.addDependency('../../../../src/rokko/scene/SceneManager.js', ['rokko.scene.SceneManager'], ['rokko.scene'], false);

@@ -1,15 +1,16 @@
 goog.provide('rokko.game');
 
 goog.require('rokko.graphics.Renderer');
+goog.require('rokko.scene.SceneManager');
 
 /**
  *
  * @param {rokko.graphics.Renderer} renderer
- * @param {rokko.Scene} scene
- * @param {Object} config
+ * @param {rokko.scene.SceneManager} sceneManager
+ * @param {Object=} config
  * @constructor
  */
-rokko.Game = function (renderer, scene, config) {
+rokko.Game = function (renderer, sceneManager, config) {
     config = config || {};
 
     this.fps = config.fps || 60;
@@ -20,7 +21,8 @@ rokko.Game = function (renderer, scene, config) {
     this.rafId = 0;
 
     this.renderer = renderer;
-    this.activeScene = scene;
+    this.sceneManager = sceneManager;
+    this.activeScene = sceneManager.activeScene;
 };
 
 rokko.Game.prototype.run = function(){
@@ -28,6 +30,17 @@ rokko.Game.prototype.run = function(){
         this.activeScene.load();
         this.rafId = window.requestAnimationFrame(this.loop.bind(this));
     }
+};
+
+rokko.Game.prototype.activateScene = function(){
+    this.pause();
+    this.activeScene = this.sceneManager.getActiveScene();
+    this.run();
+};
+
+rokko.Game.prototype.pause = function(){
+    window.cancelAnimationFrame(this.rafId);
+    this.rafId = 0;
 };
 
 rokko.Game.prototype.loop = function(now){
@@ -39,12 +52,4 @@ rokko.Game.prototype.loop = function(now){
 
     this.frames += 1;
     this.lastTime = now;
-};
-
-/**
- *
- * @param {rokko.Scene} scene
- */
-rokko.Game.prototype.setScene = function(scene){
-    this.activeScene = scene;
 };
