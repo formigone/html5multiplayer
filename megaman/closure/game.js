@@ -40,7 +40,14 @@ function main(){
     });
 
     var gameOver = new rokko.Scene({
-        onLoad: function(){
+        props: {
+            text: {y: HALF_HEIGHT + 50, i: 0}
+        },
+        onUpdate: function(dt, frames){
+            var text = this.props.text;
+            text.y = (Math.sin(text.i) * 30) + 10;
+            text.i += 0.05;
+            text.y += 250;
         },
         onRender: function(renderer, frames){
             var ctx = renderer.ctx;
@@ -53,7 +60,7 @@ function main(){
             ctx.textAlign = 'center';
 
             ctx.font = '2em "Press Start 2P"';
-            ctx.fillText('GAME OVER!', HALF_WIDTH, HALF_HEIGHT + 50, WIDTH);
+            ctx.fillText('GAME OVER!', HALF_WIDTH, this.props.text.y, WIDTH);
         }
     });
 

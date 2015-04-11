@@ -47,7 +47,7 @@ rokko.Game.prototype.loop = function(now){
     this.rafId = window.requestAnimationFrame(this.loop.bind(this));
 
     this.delta = now - this.lastTime;
-    this.activeScene.update(this.delta);
+    this.activeScene.update(this.delta, this.frames);
     this.activeScene.render(this.renderer, this.frames);
 
     this.frames += 1;

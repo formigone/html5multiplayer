@@ -33,9 +33,10 @@ rokko.Scene.prototype.unload = function(){
 /**
  *
  * @param {number} dt
+ * @param {number} frames
  */
-rokko.Scene.prototype.update = function(dt){
-    this.onUpdate(dt);
+rokko.Scene.prototype.update = function(dt, frames){
+    this.onUpdate(dt, frames);
 };
 
 /**
