@@ -119,5 +119,3 @@ rokko.main.play = function(){
         game.activateScene();
     //});
 };
-
-rokko.play();
