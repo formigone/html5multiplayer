@@ -5,7 +5,7 @@ goog.require('rokko.scene');
 goog.require('rokko.scene.SceneManager');
 goog.require('rokko.game');
 
-goog.require('goog.dom.fullscreen');
+//goog.require('goog.dom.fullscreen');
 
 /**
  * @export
