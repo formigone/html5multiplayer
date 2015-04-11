@@ -4,6 +4,8 @@ goog.require('rokko.scene');
 goog.require('rokko.scene.SceneManager');
 goog.require('rokko.game');
 
+goog.require('goog.dom.fullscreen');
+
 function main(){
     var WIDTH = 800;
     var HEIGHT = 450;
@@ -32,22 +34,26 @@ function main(){
 
             if (frames % 60 < 35) {
                 ctx.font = '2em "Press Start 2P"';
-                ctx.fillText('CLICK TO DIE', HALF_WIDTH, HALF_HEIGHT + 50, WIDTH);
+                ctx.fillText('CLICK TO DIE', HALF_WIDTH, HALF_HEIGHT, WIDTH);
             }
-            ctx.font = '1em "Press Start 2P"';
+            ctx.font = '0.8em "Press Start 2P"';
             ctx.fillText('(c) RODRIGO SILVEIRA. MEGA MAN (c) CAPCOM 1990, 2004 ', HALF_WIDTH, HEIGHT - 30, WIDTH);
         }
     });
 
     var gameOver = new rokko.Scene({
         props: {
-            text: {y: HALF_HEIGHT + 50, i: 0}
+            text: {y: HALF_HEIGHT + 50, i: 0},
+            img: new Image()
+        },
+        onLoad: function(){
+            this.props.img.src = '/img/powerup.png';
         },
         onUpdate: function(dt, frames){
             var text = this.props.text;
             text.y = (Math.sin(text.i) * 30) + 10;
             text.i += 0.05;
-            text.y += 250;
+            text.y += 200;
         },
         onRender: function(renderer, frames){
             var ctx = renderer.ctx;
@@ -61,6 +67,8 @@ function main(){
 
             ctx.font = '2em "Press Start 2P"';
             ctx.fillText('GAME OVER!', HALF_WIDTH, this.props.text.y, WIDTH);
+
+            ctx.drawImage(this.props.img, 13, 13, 37, 53, HALF_WIDTH, HEIGHT - 200, 37, 53);
         }
     });
 
@@ -72,5 +80,8 @@ function main(){
     sceneManager.setActive('splash');
 
     renderer.bindTo(document.body);
-    game.activateScene();
+    //document.body.addEventListener('keydown', function(){
+    //    goog.dom.fullscreen.requestFullScreen(renderer.canvas);
+        game.activateScene();
+    //});
 }
