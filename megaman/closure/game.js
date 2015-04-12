@@ -7,9 +7,6 @@ goog.require('rokko.game');
 
 //goog.require('goog.dom.fullscreen');
 
-/**
- * @export
- */
 rokko.main.play = function(){
     var WIDTH = 800;
     var HEIGHT = 450;
@@ -119,3 +116,5 @@ rokko.main.play = function(){
         game.activateScene();
     //});
 };
+
+goog.exportSymbol('rokko.play', rokko.main.play);
