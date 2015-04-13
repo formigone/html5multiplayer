@@ -64,7 +64,7 @@ rokko.main = function(){
             mm: {x: HALF_WIDTH, y: HEIGHT - 200, dx: 0.15}
         },
         onLoad: function(){
-            this.props.img.src = '/img/powerup.png';
+            this.props.img.src = 'img/powerup.png';
         },
         onUpdate: function(dt, frames){
             var text = this.props.text;
