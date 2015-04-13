@@ -10,16 +10,16 @@ goog.require('rokko.graphics.Renderer');
 rokko.Scene = function (options) {
     this.props = options.props || {};
 
-    this.onLoad = goog.nullFunction;
-    this.onUnload = goog.nullFunction;
-    this.onUpdate = goog.nullFunction;
-    this.onRender = goog.nullFunction;
+    this.onLoad = options.onLoad instanceof Function ? options.onLoad : goog.nullFunction;
+    this.onUnload = options.onUnload instanceof Function ? options.onUnload : goog.nullFunction;
+    this.onUpdate = options.onUpdate instanceof Function ? options.onUpdate : goog.nullFunction;
+    this.onRender = options.onRender instanceof Function ? options.onRender : goog.nullFunction;
 
-    ['onLoad', 'onUnload', 'onUpdate', 'onRender'].forEach(function(method){
-        if (options[method] instanceof Function){
-            this[method] = options[method];
-        }
-    }.bind(this));
+    //['onLoad', 'onUnload', 'onUpdate', 'onRender'].forEach(function(method){
+    //    if (options[method] instanceof Function){
+    //        this[method] = options[method];
+    //    }
+    //}.bind(this));
 };
 
 rokko.Scene.prototype.load = function(){

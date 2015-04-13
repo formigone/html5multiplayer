@@ -14,7 +14,6 @@ rokko.main = function(){
     var HALF_HEIGHT = parseInt(HEIGHT / 2, 10);
 
     var renderer = new rokko.graphics.Renderer(WIDTH, HEIGHT);
-    renderer.bindTo(document.body);return;
     var sceneManager = new rokko.scene.SceneManager();
 
     var splash = new rokko.Scene({
